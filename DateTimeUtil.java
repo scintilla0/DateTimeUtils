@@ -28,7 +28,7 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.6 - 2024-03-01
+ * @version 1.1.7 - 2024-04-07
  * @author scintilla0
  */
 public class DateTimeUtil {
@@ -47,15 +47,15 @@ public class DateTimeUtil {
 	 * while <b>Integer(int)</b> same as <b>String</b>.<br>
 	 * Passing {@code null} will return {@code null}.<br>
 	 * Passing an unsupported argument will throw a <b>DateTimeParseException</b>.
-	 * @param source Target object to be parsed into <b>LocalDate</b>.
+	 * @param sourceObject Target object to be parsed into <b>LocalDate</b>.
 	 * @return Parsed <b>LocalDate</b> value.
 	 */
-	public static LocalDate parseDate(Object source) {
+	public static LocalDate parseDate(Object sourceObject) {
 		LocalDate result = null;
-		if (source == null) {
+		if (sourceObject == null) {
 			return null;
-		} else if (source instanceof String) {
-			String sourceString = (String) source;
+		} else if (sourceObject instanceof String) {
+			String sourceString = (String) sourceObject;
 			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
 				for (DateTimeFormatter format : PRESET_DATE_FORMAT.keySet()) {
 					result = parseDate(sourceString, format);
@@ -67,22 +67,22 @@ public class DateTimeUtil {
 			if (result == null) {
 				result = parseDate_jp(sourceString);
 			}
-		} else if (source instanceof LocalDate) {
-			result = LocalDate.from((LocalDate) source);
-		} else if (source instanceof LocalDateTime) {
-			result = ((LocalDateTime) source).toLocalDate();
-		} else if (source instanceof Timestamp) {
-			result = parseDate(((Timestamp) source).toLocalDateTime());
-		} else if (source instanceof Date) {
-			result = ((Date) source).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		} else if (source instanceof Calendar) {
-			result = parseDate(((Calendar) source).getTime());
-		} else if (source instanceof Long) {
-			result = parseDate(new Timestamp((Long) source));
-		} else if (source instanceof Integer) {
-			result = parseDate(((Integer) source).toString());
+		} else if (sourceObject instanceof LocalDate) {
+			result = LocalDate.from((LocalDate) sourceObject);
+		} else if (sourceObject instanceof LocalDateTime) {
+			result = ((LocalDateTime) sourceObject).toLocalDate();
+		} else if (sourceObject instanceof Timestamp) {
+			result = parseDate(((Timestamp) sourceObject).toLocalDateTime());
+		} else if (sourceObject instanceof Date) {
+			result = ((Date) sourceObject).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		} else if (sourceObject instanceof Calendar) {
+			result = parseDate(((Calendar) sourceObject).getTime());
+		} else if (sourceObject instanceof Long) {
+			result = parseDate(new Timestamp((Long) sourceObject));
+		} else if (sourceObject instanceof Integer) {
+			result = parseDate(((Integer) sourceObject).toString());
 		} else {
-			throw new DateTimeParseException("Unparseable argument(s) passed in", source.toString(), 0);
+			throw new DateTimeParseException("Unparseable argument(s) passed in", sourceObject.toString(), 0);
 		}
 		return result;
 	}
@@ -96,7 +96,7 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalDate</b> value.
 	 */
 	public static LocalDate parseDate(String source, String formatPattern) {
-		return parseDate(source, DateTimeFormatter.ofPattern(formatPattern));
+		return parse(source, formatPattern, DateTimeUtil::parseDate);
 	}
 
 	/**
@@ -108,14 +108,7 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalDate</b> value.
 	 */
 	public static LocalDate parseDate(String source, DateTimeFormatter format) {
-		if (EmbeddedStringUtil.isNullOrBlank(source)) {
-			return null;
-		}
-		try {
-			return LocalDate.parse(source, format);
-		} catch (DateTimeParseException exception) {
-			return null;
-		}
+		return parse(source, format, LocalDate::parse);
 	}
 
 	/**
@@ -159,11 +152,11 @@ public class DateTimeUtil {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Evaluates if the target object can be parsed into a valid <b>LocalDate</b> object.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target date object.
+	 * @param sourceObject Target date object.
 	 * @return {@code true} if successfully parsed.
 	 */
-	public static boolean isDate(Object source) {
-		return parseDate(source) != null;
+	public static boolean isDate(Object sourceObject) {
+		return parseDate(sourceObject) != null;
 	}
 
 	/**
@@ -198,12 +191,12 @@ public class DateTimeUtil {
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
 	 * <pre><b><i>Eg.:</i></b>&#9;atPreviousDateOfWeek("2002-07-21"(7), 5) -> [2002-07-19](5)
 	 * &#9;atPreviousDateOfWeek("2002-07-21"(7), 7) -> [2002-07-14](7)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atPreviousDateOfWeek(Object source, int dayOfWeek) {
-		return atDateOfWeekCore(source, parseDayOfWeek(dayOfWeek), -1);
+	public static LocalDate atPreviousDateOfWeek(Object sourceObject, int dayOfWeek) {
+		return atDateOfWeekCore(sourceObject, parseDayOfWeek(dayOfWeek), -1);
 	}
 
 	/**
@@ -212,12 +205,12 @@ public class DateTimeUtil {
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
 	 * <pre><b><i>Eg.:</i></b>&#9;atPreviousDateOfWeek("2002-07-21"(7), {@link DayOfWeek#FRIDAY}) -> [2002-07-19](5)
 	 * &#9;atPreviousDateOfWeek("2002-07-21"(7), {@link DayOfWeek#SUNDAY}) -> [2002-07-14](7)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by a {@link DayOfWeek} enum.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atPreviousDateOfWeek(Object source, DayOfWeek dayOfWeek) {
-		return atDateOfWeekCore(source, dayOfWeek, -1);
+	public static LocalDate atPreviousDateOfWeek(Object sourceObject, DayOfWeek dayOfWeek) {
+		return atDateOfWeekCore(sourceObject, dayOfWeek, -1);
 	}
 
 	/**
@@ -227,12 +220,12 @@ public class DateTimeUtil {
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
 	 * <pre><b><i>Eg.:</i></b>&#9;atNextDateOfWeek("2002-07-21"(7), 5) -> [2002-07-26](5)
 	 * &#9;atNextDateOfWeek("2002-07-21"(7), 7) -> [2002-07-28](7)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atNextDateOfWeek(Object source, int dayOfWeek) {
-		return atDateOfWeekCore(source, parseDayOfWeek(dayOfWeek), 1);
+	public static LocalDate atNextDateOfWeek(Object sourceObject, int dayOfWeek) {
+		return atDateOfWeekCore(sourceObject, parseDayOfWeek(dayOfWeek), 1);
 	}
 
 	/**
@@ -241,20 +234,20 @@ public class DateTimeUtil {
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
 	 * <pre><b><i>Eg.:</i></b>&#9;atNextDateOfWeek("2002-07-21"(7), {@link DayOfWeek#FRIDAY}) -> [2002-07-26](5)
 	 * &#9;atNextDateOfWeek("2002-07-21"(7), {@link DayOfWeek#SUNDAY}) -> [2002-07-28](7)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by a {@link DayOfWeek} enum.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atNextDateOfWeek(Object source, DayOfWeek dayOfWeek) {
-		return atDateOfWeekCore(source, dayOfWeek, 1);
+	public static LocalDate atNextDateOfWeek(Object sourceObject, DayOfWeek dayOfWeek) {
+		return atDateOfWeekCore(sourceObject, dayOfWeek, 1);
 	}
 
-	private static LocalDate atDateOfWeekCore(Object source, DayOfWeek dayOfWeek, int offSet) {
-		LocalDate result = atDateInWeek(source, dayOfWeek);
+	private static LocalDate atDateOfWeekCore(Object sourceObject, DayOfWeek dayOfWeek, int offSet) {
+		LocalDate result = atDateInWeek(sourceObject, dayOfWeek);
 		if (result == null) {
 			return null;
 		}
-		if (compareDate(source, result) != (-offSet)) {
+		if (compareDate(sourceObject, result) != (-offSet)) {
 			result = plusWeeksToDate(result, offSet);
 		}
 		return result;
@@ -268,12 +261,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atDateInWeek("2002-07-21"(7), 7) -> [2002-07-21](7)
 	 * &#9;atDateInWeek("2002-07-21"(7), 0) -> [2002-07-21](7)
 	 * &#9;atDateInWeek("2002-07-21"(7), 1) -> [2002-07-15](1)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atDateInWeek(Object source, int dayOfWeek) {
-		return atDateInWeek(source, parseDayOfWeek(dayOfWeek));
+	public static LocalDate atDateInWeek(Object sourceObject, int dayOfWeek) {
+		return atDateInWeek(sourceObject, parseDayOfWeek(dayOfWeek));
 	}
 
 	/**
@@ -282,12 +275,12 @@ public class DateTimeUtil {
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
 	 * <pre><b><i>Eg.:</i></b>&#9;atDateInWeek("2002-07-21"(7), {@link DayOfWeek#SUNDAY}) -> [2002-07-21](7)
 	 * &#9;atDateInWeek("2002-07-21"(7), {@link DayOfWeek#MONDAY}) -> [2002-07-15](1)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by a {@link DayOfWeek} enum.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atDateInWeek(Object source, DayOfWeek dayOfWeek) {
-		LocalDate result = parseDate(source);
+	public static LocalDate atDateInWeek(Object sourceObject, DayOfWeek dayOfWeek) {
+		LocalDate result = parseDate(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -303,12 +296,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atDateInWeekSundayFirst("2002-07-21"(7), 7) -> [2002-07-21](7)
 	 * &#9;atDateInWeekSundayFirst("2002-07-21"(7), 0) -> [2002-07-21](7)
 	 * &#9;atDateInWeekSundayFirst("2002-07-21"(7), 1) -> [2002-07-22](1)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atDateInWeekSundayFirst(Object source, int dayOfWeek) {
-		return atDateInWeekSundayFirst(source, parseDayOfWeek(dayOfWeek));
+	public static LocalDate atDateInWeekSundayFirst(Object sourceObject, int dayOfWeek) {
+		return atDateInWeekSundayFirst(sourceObject, parseDayOfWeek(dayOfWeek));
 	}
 
 	/**
@@ -318,12 +311,12 @@ public class DateTimeUtil {
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
 	 * <pre><b><i>Eg.:</i></b>&#9;atDateInWeekSundayFirst("2002-07-21"(7), {@link DayOfWeek#SUNDAY}) -> [2002-07-21](7)
 	 * &#9;atDateInWeekSundayFirst("2002-07-21"(7), {@link DayOfWeek#MONDAY}) -> [2002-07-22](1)</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dayOfWeek Target day of the week presented by a {@link DayOfWeek} enum.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atDateInWeekSundayFirst(Object source, DayOfWeek dayOfWeek) {
-		LocalDate result = parseDate(source);
+	public static LocalDate atDateInWeekSundayFirst(Object sourceObject, DayOfWeek dayOfWeek) {
+		LocalDate result = parseDate(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -348,12 +341,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atPreviousDateOfMonth("2002-07-21", 1) -> [2002-07-01]
 	 * &#9;atPreviousDateOfMonth("2002-07-21", 31) -> [2002-06-30]
 	 * &#9;atPreviousDateOfMonth("2002-07-21", 21) -> [2002-06-21]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dateOfMonth Target date of the month.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atPreviousDateOfMonth(Object source, int dateOfMonth) {
-		return atDateOfMonthCore(source, dateOfMonth, -1);
+	public static LocalDate atPreviousDateOfMonth(Object sourceObject, int dateOfMonth) {
+		return atDateOfMonthCore(sourceObject, dateOfMonth, -1);
 	}
 
 	/**
@@ -364,20 +357,20 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atNextDateOfMonth("2002-07-21", 1) -> [2002-08-01]
 	 * &#9;atNextDateOfMonth("2002-07-21", 31) -> [2002-07-31]
 	 * &#9;atNextDateOfMonth("2002-07-21", 21) -> [2002-08-21]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dateOfMonth Target date of the month.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atNextDateOfMonth(Object source, int dateOfMonth) {
-		return atDateOfMonthCore(source, dateOfMonth, 1);
+	public static LocalDate atNextDateOfMonth(Object sourceObject, int dateOfMonth) {
+		return atDateOfMonthCore(sourceObject, dateOfMonth, 1);
 	}
 
-	private static LocalDate atDateOfMonthCore(Object source, int dateOfMonth, int offSet) {
-		LocalDate result = atDateInMonth(source, dateOfMonth);
+	private static LocalDate atDateOfMonthCore(Object sourceObject, int dateOfMonth, int offSet) {
+		LocalDate result = atDateInMonth(sourceObject, dateOfMonth);
 		if (result == null) {
 			return null;
 		}
-		if (compareDate(source, result) != (-offSet)) {
+		if (compareDate(sourceObject, result) != (-offSet)) {
 			result = atDateInMonth(plusMonthsToDate(result, offSet), dateOfMonth);
 		}
 		return result;
@@ -392,14 +385,14 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atDateInMonth("2002-07-21", 1) -> [2002-07-01]
 	 * &#9;atDateInMonth("2002-02-01", 31) -> [2002-02-28]
 	 * &#9;atDateInMonth("2002-07", 31) -> [2002-07-31]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param dateOfMonth Target date of month.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atDateInMonth(Object source, int dateOfMonth) {
+	public static LocalDate atDateInMonth(Object sourceObject, int dateOfMonth) {
 		LocalDate result;
-		if (source instanceof String) {
-			String sourceString = (String) source;
+		if (sourceObject instanceof String) {
+			String sourceString = (String) sourceObject;
 			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
 				for (Map.Entry<DateTimeFormatter, String> entry : PRESET_DATE_FORMAT.entrySet()) {
 					result = parseDate(sourceString + entry.getValue(), entry.getKey());
@@ -409,7 +402,7 @@ public class DateTimeUtil {
 				}
 			}
 		}
-		result = parseDate(source);
+		result = parseDate(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -426,12 +419,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atPreviousMonthOfYear("2002-07-21", 8) -> [2001-08-01]
 	 * &#9;atPreviousMonthOfYear("2002-07-21", 7) -> [2001-07-01]
 	 * &#9;atPreviousMonthOfYear("2002-07-21", 6) -> [2002-06-01]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param month Target month presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atPreviousMonthOfYear(Object source, int month) {
-		return atMonthOfYearCore(source, month, -1);
+	public static LocalDate atPreviousMonthOfYear(Object sourceObject, int month) {
+		return atMonthOfYearCore(sourceObject, month, -1);
 	}
 
 	/**
@@ -441,12 +434,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atPreviousMonthOfYear("2002-07-21", {@link Month#AUGUST}) -> [2001-08-01]
 	 * &#9;atPreviousMonthOfYear("2002-07-21", {@link Month#JULY}) -> [2001-07-01]
 	 * &#9;atPreviousMonthOfYear("2002-07-21", {@link Month#JUNE}) -> [2002-06-01]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param month Target month presented by a {@link Month} emun.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atPreviousMonthOfYear(Object source, Month month) {
-		return atMonthOfYearCore(source, month.getValue(), -1);
+	public static LocalDate atPreviousMonthOfYear(Object sourceObject, Month month) {
+		return atMonthOfYearCore(sourceObject, month.getValue(), -1);
 	}
 
 	/**
@@ -457,12 +450,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atNextMonthOfYear("2002-07-21", 8) -> [2002-08-01]
 	 * &#9;atNextMonthOfYear("2002-07-21", 7) -> [2003-07-01]
 	 * &#9;atNextMonthOfYear("2002-07-21", 6) -> [2003-06-01]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param month Target month presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atNextMonthOfYear(Object source, int month) {
-		return atMonthOfYearCore(source, month, 1);
+	public static LocalDate atNextMonthOfYear(Object sourceObject, int month) {
+		return atMonthOfYearCore(sourceObject, month, 1);
 	}
 
 	/**
@@ -472,20 +465,20 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atNextMonthOfYear("2002-07-21", {@link Month#AUGUST}) -> [2002-08-01]
 	 * &#9;atNextMonthOfYear("2002-07-21", {@link Month#JULY}) -> [2003-07-01]
 	 * &#9;atNextMonthOfYear("2002-07-21", {@link Month#JUNE}) -> [2003-06-01]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param month Target month presented by a {@link Month} emun.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atNextMonthOfYear(Object source, Month month) {
-		return atMonthOfYearCore(source, month.getValue(), 1);
+	public static LocalDate atNextMonthOfYear(Object sourceObject, Month month) {
+		return atMonthOfYearCore(sourceObject, month.getValue(), 1);
 	}
 
-	private static LocalDate atMonthOfYearCore(Object source, int month, int offSet) {
-		LocalDate result = atFirstDateOfYear(source, month);
+	private static LocalDate atMonthOfYearCore(Object sourceObject, int month, int offSet) {
+		LocalDate result = atFirstDateOfYear(sourceObject, month);
 		if (result == null) {
 			return null;
 		}
-		if (compareDate(source, result) != (-offSet)) {
+		if (compareDate(sourceObject, result) != (-offSet)) {
 			result = plusYearsToDate(result, offSet);
 		}
 		return result;
@@ -499,11 +492,11 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atFirstDateOfYear("2002-07-21") -> [2002-01-01]
 	 * &#9;atFirstDateOfYear("2002-06") -> [2002-01-01]
 	 * &#9;atFirstDateOfYear("2002") -> [2002-01-01]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atFirstDateOfYear(Object source) {
-		return atFirstDateOfYear(source, 1);
+	public static LocalDate atFirstDateOfYear(Object sourceObject) {
+		return atFirstDateOfYear(sourceObject, 1);
 	}
 
 	/**
@@ -515,25 +508,25 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atFirstDateOfYear("2002-07-21", 1) -> [2002-01-01]
 	 * &#9;atFirstDateOfYear("2002-06", 7) -> [2001-07-01]
 	 * &#9;atFirstDateOfYear("2002", 7) -> [2002-07-01]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param firstMonthAnnual The first month of a year presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atFirstDateOfYear(Object source, int firstMonthAnnual) {
+	public static LocalDate atFirstDateOfYear(Object sourceObject, int firstMonthAnnual) {
 		LocalDate result;
-		if (source instanceof String) {
-			String sourceString = (String) source;
+		if (sourceObject instanceof String) {
+			String sourceString = (String) sourceObject;
 			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
 				result = parseDate(sourceString + YEAR_COMPLEMENT, DATE_FULL_PLAIN);
 				if (result == null) {
-					result = atDateInMonth(source, 1);
+					result = atDateInMonth(sourceObject, 1);
 				}
 				if (result != null) {
 					return atFirstDateOfYear(result, firstMonthAnnual);
 				}
 			}
 		}
-		result = parseDate(source);
+		result = parseDate(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -550,12 +543,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atFirstDateOfYear("2002-07-21", {@link Month#JANUARY}) -> [2002-01-01]
 	 * &#9;atFirstDateOfYear("2002-06", {@link Month#JULY}) -> [2001-07-01]
 	 * &#9;atFirstDateOfYear("2002", {@link Month#JULY}) -> [2002-07-01]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param firstMonthAnnual The first month of a year presented by a {@link Month} emun.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atFirstDateOfYear(Object source, Month firstMonthAnnual) {
-		return atFirstDateOfYear(source, firstMonthAnnual.getValue());
+	public static LocalDate atFirstDateOfYear(Object sourceObject, Month firstMonthAnnual) {
+		return atFirstDateOfYear(sourceObject, firstMonthAnnual.getValue());
 	}
 
 	/**
@@ -566,11 +559,11 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atLastDateOfYear("2002-07-21") -> [2002-12-31]
 	 * &#9;atLastDateOfYear("2002-06") -> [2002-12-31]
 	 * &#9;atLastDateOfYear("2002") -> [2002-12-31]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atLastDateOfYear(Object source) {
-		return atLastDateOfYear(source, 1);
+	public static LocalDate atLastDateOfYear(Object sourceObject) {
+		return atLastDateOfYear(sourceObject, 1);
 	}
 
 	/**
@@ -582,12 +575,12 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atLastDateOfYear("2002-07-21", 1) -> [2001-12-31]
 	 * &#9;atLastDateOfYear("2002-06", 7) -> [2002-06-30]
 	 * &#9;atLastDateOfYear("2002", 7) -> [2003-06-30]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param firstMonthAnnual The first month of a year presented by an <b>int</b> value.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atLastDateOfYear(Object source, int firstMonthAnnual) {
-		LocalDate result = atFirstDateOfYear(source, firstMonthAnnual);
+	public static LocalDate atLastDateOfYear(Object sourceObject, int firstMonthAnnual) {
+		LocalDate result = atFirstDateOfYear(sourceObject, firstMonthAnnual);
 		if (result == null) {
 			return null;
 		}
@@ -602,64 +595,64 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atLastDateOfYear("2002-07-21", {@link Month#JANUARY}) -> [2001-12-31]
 	 * &#9;atLastDateOfYear("2002-06", {@link Month#JULY}) -> [2002-06-30]
 	 * &#9;atLastDateOfYear("2002", {@link Month#JULY}) -> [2003-06-30]</pre>
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param firstMonthAnnual The first month of a year presented by a {@link Month} enum.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate atLastDateOfYear(Object source, Month firstMonthAnnual) {
-		return atLastDateOfYear(source, firstMonthAnnual.getValue());
+	public static LocalDate atLastDateOfYear(Object sourceObject, Month firstMonthAnnual) {
+		return atLastDateOfYear(sourceObject, firstMonthAnnual.getValue());
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Retrieves the date that is a certain number of days before or after the source date.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param days Number of days.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate plusDaysToDate(Object source, Integer days) {
-		return plusToDateCore(source, days, ChronoUnit.DAYS);
+	public static LocalDate plusDaysToDate(Object sourceObject, Integer days) {
+		return plusToDateCore(sourceObject, days, ChronoUnit.DAYS);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Retrieves the date that is a certain number of weeks before or after the source date.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param weeks Number of weeks.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate plusWeeksToDate(Object source, Integer weeks) {
-		return plusToDateCore(source, weeks, ChronoUnit.WEEKS);
+	public static LocalDate plusWeeksToDate(Object sourceObject, Integer weeks) {
+		return plusToDateCore(sourceObject, weeks, ChronoUnit.WEEKS);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Retrieves the date that is a certain number of months before or after the source date.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param months Number of months.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate plusMonthsToDate(Object source, Integer months) {
-		return plusToDateCore(source, months, ChronoUnit.MONTHS);
+	public static LocalDate plusMonthsToDate(Object sourceObject, Integer months) {
+		return plusToDateCore(sourceObject, months, ChronoUnit.MONTHS);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Retrieves the date that is a certain number of years before or after the source date.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param years Number of years.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate plusYearsToDate(Object source, Integer years) {
-		return plusToDateCore(source, years, ChronoUnit.YEARS);
+	public static LocalDate plusYearsToDate(Object sourceObject, Integer years) {
+		return plusToDateCore(sourceObject, years, ChronoUnit.YEARS);
 	}
 
-	private static LocalDate plusToDateCore(Object source, Integer spanValue, ChronoUnit unit) {
-		LocalDate result = parseDate(source);
+	private static LocalDate plusToDateCore(Object sourceObject, Integer spanValue, ChronoUnit unit) {
+		LocalDate result = parseDate(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -670,12 +663,12 @@ public class DateTimeUtil {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Retrieves the date that is the specified duration before or after the source date.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source date object.
+	 * @param sourceObject Source date object.
 	 * @param duration Target duration span.
 	 * @return Retrieved <b>LocalDate</b> value.
 	 */
-	public static LocalDate plusDurationToDate(Object source, Duration duration) {
-		LocalDate result = parseDate(source);
+	public static LocalDate plusDurationToDate(Object sourceObject, Duration duration) {
+		LocalDate result = parseDate(sourceObject);
 		if (result == null || duration == null) {
 			return result;
 		}
@@ -686,52 +679,52 @@ public class DateTimeUtil {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Gets the number of days between the two target dates.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target date object.
-	 * @param source2 The second target date object.
+	 * @param sourceObject1 The first target date object.
+	 * @param sourceObject2 The second target date object.
 	 * @return Number of day span.
 	 */
-	public static int getDaySpanBetweenDate(Object source1, Object source2) {
-		return getSpanBetweenDateCore(source1, source2, ChronoUnit.DAYS);
+	public static int getDaySpanBetweenDate(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenDateCore(sourceObject1, sourceObject2, ChronoUnit.DAYS);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Gets the number of weeks between the two target dates.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target date object.
-	 * @param source2 The second target date object.
+	 * @param sourceObject1 The first target date object.
+	 * @param sourceObject2 The second target date object.
 	 * @return Number of week span.
 	 */
-	public static int getWeekSpanBetweenDate(Object source1, Object source2) {
-		return getSpanBetweenDateCore(source1, source2, ChronoUnit.WEEKS);
+	public static int getWeekSpanBetweenDate(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenDateCore(sourceObject1, sourceObject2, ChronoUnit.WEEKS);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Gets the number of months between the two target dates.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target date object.
-	 * @param source2 The second target date object.
+	 * @param sourceObject1 The first target date object.
+	 * @param sourceObject2 The second target date object.
 	 * @return Number of month span.
 	 */
-	public static int getMonthSpanBetweenDate(Object source1, Object source2) {
-		return getSpanBetweenDateCore(source1, source2, ChronoUnit.MONTHS);
+	public static int getMonthSpanBetweenDate(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenDateCore(sourceObject1, sourceObject2, ChronoUnit.MONTHS);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Gets the number of years between the two target dates.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target date object.
-	 * @param source2 The second target date object.
+	 * @param sourceObject1 The first target date object.
+	 * @param sourceObject2 The second target date object.
 	 * @return Number of year span.
 	 */
-	public static int getYearSpanBetweenDate(Object source1, Object source2) {
-		return getSpanBetweenDateCore(source1, source2, ChronoUnit.YEARS);
+	public static int getYearSpanBetweenDate(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenDateCore(sourceObject1, sourceObject2, ChronoUnit.YEARS);
 	}
 
-	private static int getSpanBetweenDateCore(Object source1, Object source2, ChronoUnit unit) {
-		LocalDate date1 = parseDate(source1), date2 = parseDate(source2);
+	private static int getSpanBetweenDateCore(Object sourceObject1, Object sourceObject2, ChronoUnit unit) {
+		LocalDate date1 = parseDate(sourceObject1), date2 = parseDate(sourceObject2);
 		if (date1 == null || date2 == null) {
 			return 0;
 		}
@@ -742,12 +735,12 @@ public class DateTimeUtil {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Gets the duration between the two target dates.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target date object.
-	 * @param source2 The second target date object.
+	 * @param sourceObject1 The first target date object.
+	 * @param sourceObject2 The second target date object.
 	 * @return <b>Duration</b> date span.
 	 */
-	public static Duration getDurationBetweenDate(Object source1, Object source2) {
-		LocalDate date1 = parseDate(source1), date2 = parseDate(source2);
+	public static Duration getDurationBetweenDate(Object sourceObject1, Object sourceObject2) {
+		LocalDate date1 = parseDate(sourceObject1), date2 = parseDate(sourceObject2);
 		if (date1 == null || date2 == null) {
 			return Duration.ZERO;
 		}
@@ -758,38 +751,26 @@ public class DateTimeUtil {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Fetches the latest date among the target dates.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param sources Target date objects.
+	 * @param sourceObjects Target date objects.
 	 * @return The latest <b>LocalDate</b> value.
 	 */
-	public static LocalDate maxDate(Object... sources) {
-		LocalDate result = null;
-		for (Object source : sources) {
-			LocalDate candidate = parseDate(source);
-			int compareResult = compareDate(candidate, result);
-			if (compareResult == 1 || compareResult == 2) {
-				result = candidate;
-			}
-		}
-		return result;
+	public static LocalDate maxDate(Object... sourceObjects) {
+		return extremumDate(sourceObjects, 1);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Fetches the earliest date among the target dates.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param sources Target date objects.
+	 * @param sourceObjects Target date objects.
 	 * @return The earliest <b>LocalDate</b> value.
 	 */
-	public static LocalDate minDate(Object... sources) {
-		LocalDate result = null;
-		for (Object source : sources) {
-			LocalDate candidate = parseDate(source);
-			int compareResult = compareDate(candidate, result);
-			if (compareResult == -1 || compareResult == 2) {
-				result = candidate;
-			}
-		}
-		return result;
+	public static LocalDate minDate(Object... sourceObjects) {
+		return extremumDate(sourceObjects, -1);
+	}
+
+	private static LocalDate extremumDate(Object[] sourceObjects, int direction) {
+		return extremum(sourceObjects, direction, DateTimeUtil::parseDate, DateTimeUtil::compareDate);
 	}
 
 	/**
@@ -1014,68 +995,68 @@ public class DateTimeUtil {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently formats the target date with the preset format: <b><u>yyyyMMdd</u></b>, eg.: <b><u>20020721</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatDate_fullPlain(Object source) {
-		return formatDate(source, DATE_FULL_PLAIN);
+	public static String formatDate_fullPlain(Object sourceObject) {
+		return formatDate(sourceObject, DATE_FULL_PLAIN);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently formats the target date with the preset format: <b><u>yyyy/MM/dd</u></b>, eg.: <b><u>2002/07/21</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatDate_fullSlash(Object source) {
-		return formatDate(source, DATE_FULL_SLASH);
+	public static String formatDate_fullSlash(Object sourceObject) {
+		return formatDate(sourceObject, DATE_FULL_SLASH);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently formats the target date with the preset format: <b><u>yyyy-MM-dd</u></b>, eg.: <b><u>2002-07-21</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatDate_fullDash(Object source) {
-		return formatDate(source, DATE_FULL_DASH);
+	public static String formatDate_fullDash(Object sourceObject) {
+		return formatDate(sourceObject, DATE_FULL_DASH);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently formats the target date with the preset format: <b><u>yyyy年MM月dd日</u></b>, eg.: <b><u>2002年07月21日</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatDate_fullChar(Object source) {
-		return formatDate(source, DATE_FULL_CHAR);
+	public static String formatDate_fullChar(Object sourceObject) {
+		return formatDate(sourceObject, DATE_FULL_CHAR);
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently formats the target date with the specified format.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @param formatPattern Target date format presented by a <b>String</b> char sequence.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatDate(Object source, String formatPattern) {
-		return formatDate(source, DateTimeFormatter.ofPattern(formatPattern));
+	public static String formatDate(Object sourceObject, String formatPattern) {
+		return formatDate(sourceObject, DateTimeFormatter.ofPattern(formatPattern));
 	}
 
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently formats the target date with the specified format.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @param format Target date format presented by a {@link DateTimeFormatter} object.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatDate(Object source, DateTimeFormatter format) {
-		LocalDate result = parseDate(source);
+	public static String formatDate(Object sourceObject, DateTimeFormatter format) {
+		LocalDate result = parseDate(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -1086,12 +1067,12 @@ public class DateTimeUtil {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently formats the target date with the format of historical chronology of Japan.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 * @see #JP_ERA_NAME
 	 */
-	public static String formatDate_jp(Object source) {
-		LocalDate result = parseDate(source);
+	public static String formatDate_jp(Object sourceObject) {
+		LocalDate result = parseDate(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -1111,17 +1092,17 @@ public class DateTimeUtil {
 	/**
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Efficiently gets the target day of the week with the Japanese format.<br>
-	 * @param source Target date object.
+	 * @param sourceObject Target date object.
 	 * @return Day of the week <b>String</b> char sequence.
 	 * @see #JP_DAY_OF_WEEK_NAME
 	 */
-	public static String formatDayOfWeek_jp(Object source) {
+	public static String formatDayOfWeek_jp(Object sourceObject) {
 		for (Map.Entry<String, List<Object>> entry : JP_DAY_OF_WEEK_NAME.entrySet()) {
-			if (entry.getValue().contains(source)) {
+			if (entry.getValue().contains(sourceObject)) {
 				return entry.getKey();
 			}
 		}
-		LocalDate date = parseDate(source);
+		LocalDate date = parseDate(sourceObject);
 		if (date != null) {
 			DayOfWeek dayOfWeek = date.getDayOfWeek();
 			for (Map.Entry<String, List<Object>> entry : JP_DAY_OF_WEEK_NAME.entrySet()) {
@@ -1147,15 +1128,15 @@ public class DateTimeUtil {
 	 * while <b>Integer(int)</b> same as <b>String</b>.<br>
 	 * Passing {@code null} will return {@code null}.<br>
 	 * Passing an unsupported arguments will throw a <b>DateTimeParseException</b>.
-	 * @param source Target object to be parsed into <b>LocalTime</b>.
+	 * @param sourceObject Target object to be parsed into <b>LocalTime</b>.
 	 * @return Parsed <b>LocalTime</b> value.
 	 */
-	public static LocalTime parseTime(Object source) {
+	public static LocalTime parseTime(Object sourceObject) {
 		LocalTime result = null;
-		if (source == null) {
+		if (sourceObject == null) {
 			return null;
-		} else if (source instanceof String) {
-			String sourceString = (String) source;
+		} else if (sourceObject instanceof String) {
+			String sourceString = (String) sourceObject;
 			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
 				for (DateTimeFormatter format : PRESET_TIME_FORMAT.keySet()) {
 					result = parseTime(sourceString, format);
@@ -1164,22 +1145,22 @@ public class DateTimeUtil {
 					}
 				}
 			}
-		} else if (source instanceof LocalTime) {
-			result = LocalTime.from((LocalTime) source);
-		} else if (source instanceof LocalDateTime) {
-			result = ((LocalDateTime) source).toLocalTime();
-		} else if (source instanceof Timestamp) {
-			result = ((Timestamp) source).toLocalDateTime().toLocalTime();
-		} else if (source instanceof Long) {
-			result = parseTime(new Timestamp((Long) source));
-		} else if (source instanceof Integer) {
-			StringBuilder sourceString = new StringBuilder(((Integer) source).toString());
+		} else if (sourceObject instanceof LocalTime) {
+			result = LocalTime.from((LocalTime) sourceObject);
+		} else if (sourceObject instanceof LocalDateTime) {
+			result = ((LocalDateTime) sourceObject).toLocalTime();
+		} else if (sourceObject instanceof Timestamp) {
+			result = ((Timestamp) sourceObject).toLocalDateTime().toLocalTime();
+		} else if (sourceObject instanceof Long) {
+			result = parseTime(new Timestamp((Long) sourceObject));
+		} else if (sourceObject instanceof Integer) {
+			StringBuilder sourceString = new StringBuilder(((Integer) sourceObject).toString());
 			for (int index = sourceString.length(); index < 6; index ++) {
 				sourceString.insert(0, 0);
 			}
 			result = parseTime(sourceString.toString());
 		} else {
-			throw new DateTimeParseException("Unparseable argument(s) passed in", source.toString(), 0);
+			throw new DateTimeParseException("Unparseable argument(s) passed in", sourceObject.toString(), 0);
 		}
 		return result;
 	}
@@ -1193,7 +1174,7 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalTime</b> value.
 	 */
 	public static LocalTime parseTime(String source, String formatPattern) {
-		return parseTime(source, DateTimeFormatter.ofPattern(formatPattern));
+		return parse(source, formatPattern, DateTimeUtil::parseTime);
 	}
 
 	/**
@@ -1205,25 +1186,18 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalTime</b> value.
 	 */
 	public static LocalTime parseTime(String source, DateTimeFormatter format) {
-		if (EmbeddedStringUtil.isNullOrBlank(source)) {
-			return null;
-		}
-		try {
-			return LocalTime.parse(source, format);
-		} catch (DateTimeParseException exception) {
-			return null;
-		}
+		return parse(source, format, LocalTime::parse);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Evaluates if the target object can be parsed into a valid <b>LocalTime</b> object.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target time object.
+	 * @param sourceObject Target time object.
 	 * @return {@code true} if successfully parsed.
 	 */
-	public static boolean isTime(Object source) {
-		return parseTime(source) != null;
+	public static boolean isTime(Object sourceObject) {
+		return parseTime(sourceObject) != null;
 	}
 
 	/**
@@ -1258,13 +1232,13 @@ public class DateTimeUtil {
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
 	 * <pre><b><i>Eg.:</i></b>&#9;atStartOfMinute("12:50:31") -> [12:50:00]
 	 * &#9;atStartOfMinute("12:50") -> [12:50:00]</pre>
-	 * @param source Source time object.
+	 * @param sourceObject Source time object.
 	 * @return Retrieved <b>LocalTime</b> value.
 	 */
-	public static LocalTime atStartOfMinute(Object source) {
+	public static LocalTime atStartOfMinute(Object sourceObject) {
 		LocalTime result;
-		if (source instanceof String) {
-			String sourceString = (String) source;
+		if (sourceObject instanceof String) {
+			String sourceString = (String) sourceObject;
 			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
 				for (Map.Entry<DateTimeFormatter, String> entry : PRESET_TIME_FORMAT.entrySet()) {
 					result = parseTime(sourceString + entry.getValue(), entry.getKey());
@@ -1274,7 +1248,7 @@ public class DateTimeUtil {
 				}
 			}
 		}
-		result = parseTime(source);
+		result = parseTime(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -1289,17 +1263,17 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atStartOfHour("12:50:31") -> [12:00:00]
 	 * &#9;atStartOfHour("12:50") -> [12:00:00]
 	 * &#9;atStartOfHour("12") -> [12:00:00]</pre>
-	 * @param source Source time object.
+	 * @param sourceObject Source time object.
 	 * @return Retrieved <b>LocalTime</b> value.
 	 */
-	public static LocalTime atStartOfHour(Object source) {
+	public static LocalTime atStartOfHour(Object sourceObject) {
 		LocalTime result;
-		if (source instanceof String) {
-			String sourceString = (String) source;
+		if (sourceObject instanceof String) {
+			String sourceString = (String) sourceObject;
 			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
 				result = parseTime(sourceString + HOUR_COMPLEMENT, TIME_BASIC_PLAIN);
 				if (result == null) {
-					result = atStartOfMinute(source);
+					result = atStartOfMinute(sourceObject);
 				}
 				if (result != null) {
 					return atStartOfHour(result);
@@ -1307,7 +1281,7 @@ public class DateTimeUtil {
 			}
 			return null;
 		}
-		result = parseTime(source);
+		result = parseTime(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -1322,11 +1296,11 @@ public class DateTimeUtil {
 	 * <pre><b><i>Eg.:</i></b>&#9;atHalfOfHour("12:50:31") -> [12:30:00]
 	 * &#9;atHalfOfHour("12:50") -> [12:30:00]
 	 * &#9;atHalfOfHour("12") -> [12:30:00]</pre>
-	 * @param source Source time object.
+	 * @param sourceObject Source time object.
 	 * @return Retrieved <b>LocalTime</b> value.
 	 */
-	public static LocalTime atHalfOfHour(Object source) {
-		LocalTime result = atStartOfHour(source);
+	public static LocalTime atHalfOfHour(Object sourceObject) {
+		LocalTime result = atStartOfHour(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -1337,40 +1311,40 @@ public class DateTimeUtil {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Retrieves the time that is a certain number of seconds before or after the source time.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source time object.
+	 * @param sourceObject Source time object.
 	 * @param seconds Number of seconds
 	 * @return Retrieved <b>LocalTime</b> value.
 	 */
-	public static LocalTime plusSecondsToTime(Object source, Integer seconds) {
-		return plusToTimeCore(source, seconds, ChronoUnit.SECONDS);
+	public static LocalTime plusSecondsToTime(Object sourceObject, Integer seconds) {
+		return plusToTimeCore(sourceObject, seconds, ChronoUnit.SECONDS);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Retrieves the time that is a certain number of minutes before or after the source time.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source time object.
+	 * @param sourceObject Source time object.
 	 * @param minutes Number of minutes.
 	 * @return Retrieved <b>LocalTime</b> value.
 	 */
-	public static LocalTime plusMinutesToTime(Object source, Integer minutes) {
-		return plusToTimeCore(source, minutes, ChronoUnit.MINUTES);
+	public static LocalTime plusMinutesToTime(Object sourceObject, Integer minutes) {
+		return plusToTimeCore(sourceObject, minutes, ChronoUnit.MINUTES);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Retrieves the time that is a certain number of hours before or after the source time.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source time object.
+	 * @param sourceObject Source time object.
 	 * @param hours Number of hours.
 	 * @return Retrieved <b>LocalTime</b> value.
 	 */
-	public static LocalTime plusHoursToTime(Object source, Integer hours) {
-		return plusToTimeCore(source, hours, ChronoUnit.HOURS);
+	public static LocalTime plusHoursToTime(Object sourceObject, Integer hours) {
+		return plusToTimeCore(sourceObject, hours, ChronoUnit.HOURS);
 	}
 
-	private static LocalTime plusToTimeCore(Object source, Integer spanValue, ChronoUnit unit) {
-		LocalTime result = parseTime(source);
+	private static LocalTime plusToTimeCore(Object sourceObject, Integer spanValue, ChronoUnit unit) {
+		LocalTime result = parseTime(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -1381,12 +1355,12 @@ public class DateTimeUtil {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Retrieves the time that is the specified duration before or after the source time.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Source time object.
+	 * @param sourceObject Source time object.
 	 * @param duration Target duration span.
 	 * @return Retrieved <b>LocalTime</b> value.
 	 */
-	public static LocalTime plusDurationToTime(Object source, Duration duration) {
-		LocalTime result = parseTime(source);
+	public static LocalTime plusDurationToTime(Object sourceObject, Duration duration) {
+		LocalTime result = parseTime(sourceObject);
 		if (result == null || duration == null) {
 			return result;
 		}
@@ -1397,40 +1371,40 @@ public class DateTimeUtil {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Gets the number of seconds between the two target times.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target time object.
-	 * @param source2 The second target time object.
+	 * @param sourceObject1 The first target time object.
+	 * @param sourceObject2 The second target time object.
 	 * @return Number of second span.
 	 */
-	public static int getSecondSpanBetweenTime(Object source1, Object source2) {
-		return getSpanBetweenTimeCore(source1, source2, ChronoUnit.SECONDS);
+	public static int getSecondSpanBetweenTime(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenTimeCore(sourceObject1, sourceObject2, ChronoUnit.SECONDS);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Gets the number of minutes between the two target times.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target time object.
-	 * @param source2 The second target time object.
+	 * @param sourceObject1 The first target time object.
+	 * @param sourceObject2 The second target time object.
 	 * @return Number of minute span.
 	 */
-	public static int getMinuteSpanBetweenTime(Object source1, Object source2) {
-		return getSpanBetweenTimeCore(source1, source2, ChronoUnit.MINUTES);
+	public static int getMinuteSpanBetweenTime(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenTimeCore(sourceObject1, sourceObject2, ChronoUnit.MINUTES);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Gets the number of hours between the two target times.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target time object.
-	 * @param source2 The second target time object.
+	 * @param sourceObject1 The first target time object.
+	 * @param sourceObject2 The second target time object.
 	 * @return Number of hour span.
 	 */
-	public static int getHourSpanBetweenTime(Object source1, Object source2) {
-		return getSpanBetweenTimeCore(source1, source2, ChronoUnit.HOURS);
+	public static int getHourSpanBetweenTime(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenTimeCore(sourceObject1, sourceObject2, ChronoUnit.HOURS);
 	}
 
-	private static int getSpanBetweenTimeCore(Object source1, Object source2, ChronoUnit unit) {
-		LocalTime time1 = parseTime(source1), time2 = parseTime(source2);
+	private static int getSpanBetweenTimeCore(Object sourceObject1, Object sourceObject2, ChronoUnit unit) {
+		LocalTime time1 = parseTime(sourceObject1), time2 = parseTime(sourceObject2);
 		if (time1 == null || time2 == null) {
 			return 0;
 		}
@@ -1441,12 +1415,12 @@ public class DateTimeUtil {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Gets the duration between the two target times.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source1 The first target time object.
-	 * @param source2 The second target time object.
+	 * @param sourceObject1 The first target time object.
+	 * @param sourceObject2 The second target time object.
 	 * @return <b>Duration</b> time span.
 	 */
-	public static Duration getDurationBetweenTime(Object source1, Object source2) {
-		LocalTime time1 = parseTime(source1), time2 = parseTime(source2);
+	public static Duration getDurationBetweenTime(Object sourceObject1, Object sourceObject2) {
+		LocalTime time1 = parseTime(sourceObject1), time2 = parseTime(sourceObject2);
 		if (time1 == null || time2 == null) {
 			return Duration.ZERO;
 		}
@@ -1457,38 +1431,26 @@ public class DateTimeUtil {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Fetches the latest time among the target times.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param sources Target time objects.
+	 * @param sourceObjects Target time objects.
 	 * @return The latest <b>LocalTime</b> value.
 	 */
-	public static LocalTime maxTime(Object... sources) {
-		LocalTime result = null;
-		for (Object source : sources) {
-			LocalTime candidate = parseTime(source);
-			int compareResult = compareTime(candidate, result);
-			if (compareResult == 1 || compareResult == 2) {
-				result = candidate;
-			}
-		}
-		return result;
+	public static LocalTime maxTime(Object... sourceObjects) {
+		return extremumTime(sourceObjects, 1);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Fetches the earliest time among the target times.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param sources Target time objects.
+	 * @param sourceObjects Target time objects.
 	 * @return The latest <b>LocalTime</b> value.
 	 */
-	public static LocalTime minTime(Object... sources) {
-		LocalTime result = null;
-		for (Object source : sources) {
-			LocalTime candidate = parseTime(source);
-			int compareResult = compareTime(candidate, result);
-			if (compareResult == -1 || compareResult == 2) {
-				result = candidate;
-			}
-		}
-		return result;
+	public static LocalTime minTime(Object... sourceObjects) {
+		return extremumTime(sourceObjects, -1);
+	}
+
+	private static LocalTime extremumTime(Object[] sourceObjects, int direction) {
+		return extremum(sourceObjects, direction, DateTimeUtil::parseTime, DateTimeUtil::compareTime);
 	}
 
 	/**
@@ -1731,90 +1693,90 @@ public class DateTimeUtil {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the preset format: <b><u>HHmm</u></b>, eg.: <b><u>1230</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime_shortPlain(Object source) {
-		return formatTime(source, TIME_SHORT_PLAIN);
+	public static String formatTime_shortPlain(Object sourceObject) {
+		return formatTime(sourceObject, TIME_SHORT_PLAIN);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the preset format: <b><u>HH:mm</u></b>, eg.: <b><u>12:30</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime_shortColon(Object source) {
-		return formatTime(source, TIME_SHORT_COLON);
+	public static String formatTime_shortColon(Object sourceObject) {
+		return formatTime(sourceObject, TIME_SHORT_COLON);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the preset format: <b><u>HHmmss</u></b>, eg.: <b><u>123050</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime_basicPlain(Object source) {
-		return formatTime(source, TIME_BASIC_PLAIN);
+	public static String formatTime_basicPlain(Object sourceObject) {
+		return formatTime(sourceObject, TIME_BASIC_PLAIN);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the preset format: <b><u>HH:mm:ss</u></b>, eg.: <b><u>12:30:50</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime_basicColon(Object source) {
-		return formatTime(source, TIME_BASIC_COLON);
+	public static String formatTime_basicColon(Object sourceObject) {
+		return formatTime(sourceObject, TIME_BASIC_COLON);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the preset format: <b><u>HHmmssSSS</u></b>, eg.: <b><u>123050000</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime_fullPlain(Object source) {
-		return formatTime(source, TIME_FULL_PLAIN);
+	public static String formatTime_fullPlain(Object sourceObject) {
+		return formatTime(sourceObject, TIME_FULL_PLAIN);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the preset format: <b><u>HH:mm:ss.SSS</u></b>, eg.: <b><u>12:30:05.000</u></b>.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime_fullColon(Object source) {
-		return formatTime(source, TIME_FULL_COLON);
+	public static String formatTime_fullColon(Object sourceObject) {
+		return formatTime(sourceObject, TIME_FULL_COLON);
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the specified format.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @param formatPattern Target time format presented by a <b>String</b> char sequence.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime(Object source, String formatPattern) {
-		return formatTime(source, DateTimeFormatter.ofPattern(formatPattern));
+	public static String formatTime(Object sourceObject, String formatPattern) {
+		return formatTime(sourceObject, DateTimeFormatter.ofPattern(formatPattern));
 	}
 
 	/**
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Efficiently formats the target time with the specified format.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @param format Target time format presented by a {@link DateTimeFormatter} object.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String formatTime(Object source, DateTimeFormatter format) {
-		LocalTime result = parseTime(source);
+	public static String formatTime(Object sourceObject, DateTimeFormatter format) {
+		LocalTime result = parseTime(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -1838,15 +1800,15 @@ public class DateTimeUtil {
 	 * or to the current date if there is only time data in the source.<br>
 	 * Passing {@code null} will return {@code null}.<br>
 	 * Passing an unsupported argument will throw a <b>DateTimeParseException</b>.<br>
-	 * @param source Target object to be parsed into <b>LocalDateTime</b>.
+	 * @param sourceObject Target object to be parsed into <b>LocalDateTime</b>.
 	 * @return Parsed <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime parse(Object source) {
+	public static LocalDateTime parse(Object sourceObject) {
 		LocalDateTime result = null;
-		if (source == null) {
+		if (sourceObject == null) {
 			return null;
-		} else if (source instanceof String) {
-			String sourceString = (String) source;
+		} else if (sourceObject instanceof String) {
+			String sourceString = (String) sourceObject;
 			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
 				for (DateTimeFormatter format : PRESET_DATE_TIME_FORMAT.keySet()) {
 					result = parse(sourceString, format);
@@ -1867,32 +1829,32 @@ public class DateTimeUtil {
 					}
 				}
 			}
-		} else if (source instanceof LocalDateTime) {
-			result = LocalDateTime.from((LocalDateTime) source);
-		} else if (source instanceof LocalDate) {
-			result = ((LocalDate) source).atStartOfDay();
-		} else if (source instanceof LocalTime) {
-			result = ((LocalTime) source).atDate(LocalDate.now());
-		} else if (source instanceof Timestamp) {
-			result = ((Timestamp) source).toLocalDateTime();
-		} else if (source instanceof Date) {
-			result = ((Date) source).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-		} else if (source instanceof Calendar) {
-			result = parse(((Calendar) source).getTime());
-		} else if (source instanceof Long) {
-			result = parse(new Timestamp((Long) source));
-		} else if (source instanceof Integer) {
-			LocalDate date = parseDate(source);
+		} else if (sourceObject instanceof LocalDateTime) {
+			result = LocalDateTime.from((LocalDateTime) sourceObject);
+		} else if (sourceObject instanceof LocalDate) {
+			result = ((LocalDate) sourceObject).atStartOfDay();
+		} else if (sourceObject instanceof LocalTime) {
+			result = ((LocalTime) sourceObject).atDate(LocalDate.now());
+		} else if (sourceObject instanceof Timestamp) {
+			result = ((Timestamp) sourceObject).toLocalDateTime();
+		} else if (sourceObject instanceof Date) {
+			result = ((Date) sourceObject).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		} else if (sourceObject instanceof Calendar) {
+			result = parse(((Calendar) sourceObject).getTime());
+		} else if (sourceObject instanceof Long) {
+			result = parse(new Timestamp((Long) sourceObject));
+		} else if (sourceObject instanceof Integer) {
+			LocalDate date = parseDate(sourceObject);
 			if (date != null) {
 				result = parse(date);
 			} else {
-				LocalTime time = parseTime(source);
+				LocalTime time = parseTime(sourceObject);
 				if (time != null) {
 					result = parse(time);
 				}
 			}
 		} else {
-			throw new DateTimeParseException("Unparseable argument(s) passed in", source.toString(), 0);
+			throw new DateTimeParseException("Unparseable argument(s) passed in", sourceObject.toString(), 0);
 		}
 		return result;
 	}
@@ -1906,7 +1868,14 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalDateTime</b> value.
 	 */
 	public static LocalDateTime parse(String source, String formatPattern) {
-		return parse(source, DateTimeFormatter.ofPattern(formatPattern));
+		return parse(source, formatPattern, DateTimeUtil::parse);
+	}
+
+	private static <Type> Type parse(String source, String formatPattern, BiFunction<String, DateTimeFormatter, Type> parser) {
+		if (EmbeddedStringUtil.isNullOrBlank(formatPattern)) {
+			return null;
+		}
+		return parser.apply(source, DateTimeFormatter.ofPattern(formatPattern));
 	}
 
 	/**
@@ -1918,11 +1887,15 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalDateTime</b> value.
 	 */
 	public static LocalDateTime parse(String source, DateTimeFormatter format) {
+		return parse(source, format, LocalDateTime::parse);
+	}
+
+	private static <Type> Type parse(String source, DateTimeFormatter format, BiFunction<String, DateTimeFormatter, Type> parser) {
 		if (EmbeddedStringUtil.isNullOrBlank(source)) {
 			return null;
 		}
 		try {
-			return LocalDateTime.parse(source, format);
+			return parser.apply(source, format);
 		} catch (DateTimeParseException exception) {
 			return null;
 		}
@@ -1956,11 +1929,11 @@ public class DateTimeUtil {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Evaluates if the target object can ben parsed into a valid <b>LocalDateTime</b> object.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target date time object.
+	 * @param sourceObject Target date time object.
 	 * @return {@code true} if successfully parsed.
 	 */
-	public static boolean isDateTime(Object source) {
-		return parse(source) != null;
+	public static boolean isDateTime(Object sourceObject) {
+		return parse(sourceObject) != null;
 	}
 
 	/**
@@ -1992,88 +1965,88 @@ public class DateTimeUtil {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is a certain number of seconds before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param seconds Number of seconds.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusSeconds(Object source, Integer seconds) {
-		return plusCore(source, seconds, ChronoUnit.SECONDS);
+	public static LocalDateTime plusSeconds(Object sourceObject, Integer seconds) {
+		return plusCore(sourceObject, seconds, ChronoUnit.SECONDS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is a certain number of minutes before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param minutes Number of minutes.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusMinutes(Object source, Integer minutes) {
-		return plusCore(source, minutes, ChronoUnit.MINUTES);
+	public static LocalDateTime plusMinutes(Object sourceObject, Integer minutes) {
+		return plusCore(sourceObject, minutes, ChronoUnit.MINUTES);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is a certain number of hours before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param hours Number of hours.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusHours(Object source, Integer hours) {
-		return plusCore(source, hours, ChronoUnit.HOURS);
+	public static LocalDateTime plusHours(Object sourceObject, Integer hours) {
+		return plusCore(sourceObject, hours, ChronoUnit.HOURS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is a certain number of days before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param days Number of days.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusDays(Object source, Integer days) {
-		return plusCore(source, days, ChronoUnit.DAYS);
+	public static LocalDateTime plusDays(Object sourceObject, Integer days) {
+		return plusCore(sourceObject, days, ChronoUnit.DAYS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is a certain number of weeks before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param weeks Number of weeks.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusWeeks(Object source, Integer weeks) {
-		return plusCore(source, weeks, ChronoUnit.WEEKS);
+	public static LocalDateTime plusWeeks(Object sourceObject, Integer weeks) {
+		return plusCore(sourceObject, weeks, ChronoUnit.WEEKS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is a certain number of months before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param months Number of months.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusMonths(Object source, Integer months) {
-		return plusCore(source, months, ChronoUnit.MONTHS);
+	public static LocalDateTime plusMonths(Object sourceObject, Integer months) {
+		return plusCore(sourceObject, months, ChronoUnit.MONTHS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is a certain number of years before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param years Number of years.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusYears(Object source, Integer years) {
-		return plusCore(source, years, ChronoUnit.YEARS);
+	public static LocalDateTime plusYears(Object sourceObject, Integer years) {
+		return plusCore(sourceObject, years, ChronoUnit.YEARS);
 	}
 
-	private static LocalDateTime plusCore(Object source, Integer spanValue, ChronoUnit unit) {
-		LocalDateTime result = parse(source);
+	private static LocalDateTime plusCore(Object sourceObject, Integer spanValue, ChronoUnit unit) {
+		LocalDateTime result = parse(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -2084,12 +2057,12 @@ public class DateTimeUtil {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Retrieves the date time that is the specified duration before or after the source time.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Source date time object.
+	 * @param sourceObject Source date time object.
 	 * @param duration Target duration span.
 	 * @return Retrieved <b>LocalDateTime</b> value.
 	 */
-	public static LocalDateTime plusDuration(Object source, Duration duration) {
-		LocalDateTime result = parse(source);
+	public static LocalDateTime plusDuration(Object sourceObject, Duration duration) {
+		LocalDateTime result = parse(sourceObject);
 		if (result == null || duration == null) {
 			return result;
 		}
@@ -2100,88 +2073,88 @@ public class DateTimeUtil {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the number of seconds between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return Number of second span.
 	 */
-	public static long getSecondSpanBetween(Object source1, Object source2) {
-		return getSpanBetweenCore(source1, source2, ChronoUnit.SECONDS);
+	public static long getSecondSpanBetween(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenCore(sourceObject1, sourceObject2, ChronoUnit.SECONDS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the number of minutes between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return Number of minute span.
 	 */
-	public static long getMinuteSpanBetween(Object source1, Object source2) {
-		return getSpanBetweenCore(source1, source2, ChronoUnit.MINUTES);
+	public static long getMinuteSpanBetween(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenCore(sourceObject1, sourceObject2, ChronoUnit.MINUTES);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the number of hours between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return Number of hour span.
 	 */
-	public static long getHourSpanBetween(Object source1, Object source2) {
-		return getSpanBetweenCore(source1, source2, ChronoUnit.HOURS);
+	public static long getHourSpanBetween(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenCore(sourceObject1, sourceObject2, ChronoUnit.HOURS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the number of days between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return Number of day span.
 	 */
-	public static long getDaySpanBetween(Object source1, Object source2) {
-		return getSpanBetweenCore(source1, source2, ChronoUnit.DAYS);
+	public static long getDaySpanBetween(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenCore(sourceObject1, sourceObject2, ChronoUnit.DAYS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the number of weeks between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return Number of week span.
 	 */
-	public static long getWeekSpanBetween(Object source1, Object source2) {
-		return getSpanBetweenCore(source1, source2, ChronoUnit.WEEKS);
+	public static long getWeekSpanBetween(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenCore(sourceObject1, sourceObject2, ChronoUnit.WEEKS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the number of months between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return Number of month span.
 	 */
-	public static long getMonthSpanBetween(Object source1, Object source2) {
-		return getSpanBetweenCore(source1, source2, ChronoUnit.MONTHS);
+	public static long getMonthSpanBetween(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenCore(sourceObject1, sourceObject2, ChronoUnit.MONTHS);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the number of years between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return Number of year span.
 	 */
-	public static long getYearSpanBetween(Object source1, Object source2) {
-		return getSpanBetweenCore(source1, source2, ChronoUnit.YEARS);
+	public static long getYearSpanBetween(Object sourceObject1, Object sourceObject2) {
+		return getSpanBetweenCore(sourceObject1, sourceObject2, ChronoUnit.YEARS);
 	}
 
-	private static long getSpanBetweenCore(Object source1, Object source2, ChronoUnit unit) {
-		LocalDateTime datetime1 = parse(source1), datetime2 = parse(source2);
+	private static long getSpanBetweenCore(Object sourceObject1, Object sourceObject2, ChronoUnit unit) {
+		LocalDateTime datetime1 = parse(sourceObject1), datetime2 = parse(sourceObject2);
 		if (datetime1 == null || datetime2 == null) {
 			return 0L;
 		}
@@ -2192,12 +2165,12 @@ public class DateTimeUtil {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Gets the duration between the two target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source1 The first target date time object.
-	 * @param source2 The second target date time object.
+	 * @param sourceObject1 The first target date time object.
+	 * @param sourceObject2 The second target date time object.
 	 * @return <b>Duration</b> date time span.
 	 */
-	public static Duration getDurationBetween(Object source1, Object source2) {
-		LocalDateTime dateTime1 = parse(source1), dateTime2 = parse(source2);
+	public static Duration getDurationBetween(Object sourceObject1, Object sourceObject2) {
+		LocalDateTime dateTime1 = parse(sourceObject1), dateTime2 = parse(sourceObject2);
 		if (dateTime1 == null || dateTime2 == null) {
 			return Duration.ZERO;
 		}
@@ -2208,34 +2181,34 @@ public class DateTimeUtil {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Fetches the latest date time among the target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param sources Target date time objects.
+	 * @param sourceObjects Target date time objects.
 	 * @return The latest <b>LocalTimeTime</b> value.
 	 */
-	public static LocalDateTime max(Object... sources) {
-		LocalDateTime result = null;
-		for (Object source : sources) {
-			LocalDateTime candidate = parse(source);
-			int compareResult = compare(candidate, result);
-			if (compareResult == 1 || compareResult == 2) {
-				result = candidate;
-			}
-		}
-		return result;
+	public static LocalDateTime max(Object... sourceObjects) {
+		return extremum(sourceObjects, 1);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Fetches the earliest date time among the target date time objects.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param sources Target date time objects.
+	 * @param sourceObjects Target date time objects.
 	 * @return The latest <b>LocalTimeTime</b> value.
 	 */
-	public static LocalDateTime min(Object... sources) {
-		LocalDateTime result = null;
-		for (Object source : sources) {
-			LocalDateTime candidate = parse(source);
-			int compareResult = compare(candidate, result);
-			if (compareResult == -1 || compareResult == 2) {
+	public static LocalDateTime min(Object... sourceObjects) {
+		return extremum(sourceObjects, -1);
+	}
+
+	private static LocalDateTime extremum(Object[] sourceObjects, int direction) {
+		return extremum(sourceObjects, direction, DateTimeUtil::parse, DateTimeUtil::compare);
+	}
+
+	private static <Type> Type extremum(Object[] sourceObjects, int direction, Function<Object, Type> parser, BiFunction<Type, Type, Integer> comparator) {
+		Type result = null;
+		for (Object sourceObject : sourceObjects) {
+			Type candidate = parser.apply(sourceObject);
+			int compareResult = comparator.apply(candidate, result);
+			if (compareResult == direction || compareResult == 2) {
 				result = candidate;
 			}
 		}
@@ -2511,11 +2484,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyyMMddHHmm</u></b>,<br>
 	 * eg.: <b><u>200207211230</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_shortPlain(Object source) {
-		return format(source, DATE_TIME_SHORT_PLAIN);
+	public static String format_shortPlain(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_SHORT_PLAIN);
 	}
 
 	/**
@@ -2523,11 +2496,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyy/MM/dd HH:mm</u></b>,<br>
 	 * eg.: <b><u>2002/07/21 12:30</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_shortSlashColon(Object source) {
-		return format(source, DATE_TIME_SHORT_SLASH_COLON);
+	public static String format_shortSlashColon(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_SHORT_SLASH_COLON);
 	}
 
 	/**
@@ -2535,11 +2508,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyy-MM-dd HH:mm</u></b>,<br>
 	 * eg.: <b><u>2002-07-21 12:30</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_shortDashColon(Object source) {
-		return format(source, DATE_TIME_SHORT_DASH_COLON);
+	public static String format_shortDashColon(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_SHORT_DASH_COLON);
 	}
 
 	/**
@@ -2547,11 +2520,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyyMMddHHmmss</u></b>,<br>
 	 * eg.: <b><u>20020721123050</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_basicPlain(Object source) {
-		return format(source, DATE_TIME_BASIC_PLAIN);
+	public static String format_basicPlain(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_BASIC_PLAIN);
 	}
 
 	/**
@@ -2559,11 +2532,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyy/MM/dd HH:mm:ss</u></b>,<br>
 	 * eg.: <b><u>2002/07/21 12:30:50</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_basicSlashColon(Object source) {
-		return format(source, DATE_TIME_BASIC_SLASH_COLON);
+	public static String format_basicSlashColon(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_BASIC_SLASH_COLON);
 	}
 
 	/**
@@ -2571,11 +2544,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyy-MM-dd HH:mm:ss</u></b>,<br>
 	 * eg.: <b><u>2002-07-21 12:30:50</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_basicDashColon(Object source) {
-		return format(source, DATE_TIME_BASIC_DASH_COLON);
+	public static String format_basicDashColon(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_BASIC_DASH_COLON);
 	}
 
 	/**
@@ -2583,11 +2556,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyyMMddHHmmssSSS</u></b>,<br>
 	 * eg.: <b><u>20020721123050000</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_fullPlain(Object source) {
-		return format(source, DATE_TIME_FULL_PLAIN);
+	public static String format_fullPlain(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_FULL_PLAIN);
 	}
 
 	/**
@@ -2595,11 +2568,11 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyy/MM/dd HH:mm:ss.SSS</u></b>,<br>
 	 * eg.: <b><u>2002/07/21 12:30:50.000</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_fullSlashColon(Object source) {
-		return format(source, DATE_TIME_FULL_SLASH_COLON);
+	public static String format_fullSlashColon(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_FULL_SLASH_COLON);
 	}
 
 	/**
@@ -2607,35 +2580,35 @@ public class DateTimeUtil {
 	 * Efficiently formats the target date time with the preset format: <b><u>yyyy-MM-dd HH:mm:ss.SSS</u></b>,<br>
 	 * eg.: <b><u>2002-07-21 12:30:50.000</u></b>.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format_fullDashColon(Object source) {
-		return format(source, DATE_TIME_FULL_DASH_COLON);
+	public static String format_fullDashColon(Object sourceObject) {
+		return format(sourceObject, DATE_TIME_FULL_DASH_COLON);
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Efficiently formats the target date time in specified format.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @param formatPattern Target date time format presented by a <b>String</b> char sequence.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format(Object source, String formatPattern) {
-		return format(source, DateTimeFormatter.ofPattern(formatPattern));
+	public static String format(Object sourceObject, String formatPattern) {
+		return format(sourceObject, DateTimeFormatter.ofPattern(formatPattern));
 	}
 
 	/**
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Efficiently formats the target date time in specified format.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and formatted.
+	 * @param sourceObject Target object to be parsed and formatted.
 	 * @param format Target date time format presented by a {@link DateTimeFormatter} object.
 	 * @return Formatted <b>String</b> char sequence.
 	 */
-	public static String format(Object source, DateTimeFormatter format) {
-		LocalDateTime result = parse(source);
+	public static String format(Object sourceObject, DateTimeFormatter format) {
+		LocalDateTime result = parse(sourceObject);
 		if (result == null) {
 			return null;
 		}
@@ -2646,47 +2619,45 @@ public class DateTimeUtil {
 	// other output
 
 	/**
-	 * Parses and wraps the target object into a <b>Date</b> instance.<br>
+	 * Parses and wraps the target object into a <b>Timestamp</b> instance.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and wrapped.
-	 * @return Wrapped <b>Date</b> value.
+	 * @param sourceObject Target object to be parsed and wrapped.
+	 * @return Wrapped <b>Timestamp</b> value.
 	 */
-	public static Date toDate(Object source) {
-		LocalDateTime dateTime = parse(source);
-		if (dateTime == null) {
-			return null;
-		}
-		return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+	public static Timestamp toTimestamp(Object sourceObject) {
+		return toType(sourceObject, Timestamp::valueOf);
 	}
 
 	/**
-	 * Parses and wraps the target object into a <b>Timestamp</b> instance.<br>
+	 * Parses and wraps the target object into a <b>Date</b> instance.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and wrapped.
-	 * @return Wrapped <b>Timestamp</b> value.
+	 * @param sourceObject Target object to be parsed and wrapped.
+	 * @return Wrapped <b>Date</b> value.
 	 */
-	public static Timestamp toTimestamp(Object source) {
-		LocalDateTime dateTime = parse(source);
-		if (dateTime == null) {
-			return null;
-		}
-		return Timestamp.valueOf(dateTime);
+	public static Date toDate(Object sourceObject) {
+		return toType(sourceObject, dateTime -> Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()));
 	}
 
 	/**
 	 * Parses and wraps the target object into a <b>Calendar</b> instance.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * @param source Target object to be parsed and wrapped.
+	 * @param sourceObject Target object to be parsed and wrapped.
 	 * @return Wrapped <b>Calendar</b> value.
 	 */
-	public static Calendar toCalendar(Object source) {
-		Date date = toDate(source);
-		if (date == null) {
+	public static Calendar toCalendar(Object sourceObject) {
+		return toType(sourceObject, dataTime -> {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(toDate(sourceObject));
+			return calendar;
+		});
+	}
+
+	private static <Type> Type toType(Object sourceObject, Function<LocalDateTime, Type> parser) {
+		LocalDateTime dateTime = parse(sourceObject);
+		if (dateTime == null) {
 			return null;
 		}
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		return calendar;
+		return parser.apply(dateTime);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////

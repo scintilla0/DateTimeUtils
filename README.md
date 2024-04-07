@@ -3,6 +3,10 @@ A utility class that provides an assortment of date and time converting and calc
 
 ### Change log
 
+#### 1.1.7 (2024-04-07)
+*	Enhance the reuse of methods.
+*	Unify the naming of variables and arguments.
+
 #### 1.1.6 (2024-03-01)
 *	All **areIn____()** methods accept multiple arguments.
 
