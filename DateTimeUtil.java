@@ -28,7 +28,7 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.7 - 2024-04-07
+ * @version 1.1.8 - 2024-04-12
  * @author scintilla0
  */
 public class DateTimeUtil {
@@ -1906,6 +1906,10 @@ public class DateTimeUtil {
 	 * Merges the first source's date and the second source's time to a new <b>LocalDateTime</b> object.<br>
 	 * Uses the current date by default if there is no date data in the first source, and [00:00:00] the second.<br>
 	 * Returns {@code null} if both sources contain no corresponding data.
+	 * <pre><b><i>Eg.:</i></b>&#9;mergeDateTime("2002-07-21", "12:30:00") -> [2002-07-21 12:30:00]
+	 * &#9;mergeDateTime("2002-07-21", "abc") -> [2002-07-21 00:00:00]
+	 * &#9;mergeDateTime("def", "12:30:00") -> [(your current date) 12:30:00]
+	 * &#9;mergeDateTime("", "") -> null</pre>
 	 * @param dateSource Target object to extract date data.
 	 * @param timeSource Target object to extract time data.
 	 * @return Merged <b>LocalDateTime</b> value.
@@ -1921,6 +1925,27 @@ public class DateTimeUtil {
 		}
 		if (time == null) {
 			time = LocalTime.MIDNIGHT;
+		}
+		return LocalDateTime.of(date, time);
+	}
+
+	/**
+	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
+	 * Merges the first source's date and the second source's time to a new <b>LocalDateTime</b> object.<br>
+	 * Returns {@code null} if any source contain no corresponding data.
+	 * <pre><b><i>Eg.:</i></b>&#9;mergeDateTimeNoticeNull("2002-07-21", "12:30:00") -> [2002-07-21 12:30:00]
+	 * &#9;mergeDateTimeNoticeNull("2002-07-21", "abc") -> null
+	 * &#9;mergeDateTimeNoticeNull("def", "12:30:00") -> null
+	 * &#9;mergeDateTimeNoticeNull("", "") -> null</pre>
+	 * @param dateSource Target object to extract date data.
+	 * @param timeSource Target object to extract time data.
+	 * @return Merged <b>LocalDateTime</b> value.
+	 */
+	public static LocalDateTime mergeDateTimeNoticeNull(Object dateSource, Object timeSource) {
+		LocalDate date = parseDate(dateSource);
+		LocalTime time = parseTime(timeSource);
+		if (date == null || time == null) {
+			return null;
 		}
 		return LocalDateTime.of(date, time);
 	}
