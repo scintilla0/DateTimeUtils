@@ -28,10 +28,10 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.8 - 2024-04-12
+ * @version 1.1.9 - 2025-03-25
  * @author scintilla0
  */
-public class DateTimeUtil {
+public class DateTimeUtils {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// date getter
@@ -56,7 +56,7 @@ public class DateTimeUtil {
 			return null;
 		} else if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
 				for (DateTimeFormatter format : PRESET_DATE_FORMAT.keySet()) {
 					result = parseDate(sourceString, format);
 					if (result != null) {
@@ -96,7 +96,7 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalDate</b> value.
 	 */
 	public static LocalDate parseDate(String source, String formatPattern) {
-		return parse(source, formatPattern, DateTimeUtil::parseDate);
+		return parse(source, formatPattern, DateTimeUtils::parseDate);
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class DateTimeUtil {
 	 * @see #JP_ERA_NAME
 	 */
 	public static LocalDate parseDate_jp(String source) {
-		if (EmbeddedStringUtil.isNullOrBlank(source)) {
+		if (EmbeddedStringUtils.isNullOrBlank(source)) {
 			return null;
 		}
 		if (source.length() <= 2) {
@@ -393,7 +393,7 @@ public class DateTimeUtil {
 		LocalDate result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
 				for (Map.Entry<DateTimeFormatter, String> entry : PRESET_DATE_FORMAT.entrySet()) {
 					result = parseDate(sourceString + entry.getValue(), entry.getKey());
 					if (result != null) {
@@ -516,7 +516,7 @@ public class DateTimeUtil {
 		LocalDate result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
 				result = parseDate(sourceString + YEAR_COMPLEMENT, DATE_FULL_PLAIN);
 				if (result == null) {
 					result = atDateInMonth(sourceObject, 1);
@@ -770,7 +770,7 @@ public class DateTimeUtil {
 	}
 
 	private static LocalDate extremumDate(Object[] sourceObjects, int direction) {
-		return extremum(sourceObjects, direction, DateTimeUtil::parseDate, DateTimeUtil::compareDate);
+		return extremum(sourceObjects, direction, DateTimeUtils::parseDate, DateTimeUtils::compareDate);
 	}
 
 	/**
@@ -890,7 +890,7 @@ public class DateTimeUtil {
 	}
 
 	private static boolean areInSequenceDateCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
-		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtil::compareDate, DateTimeUtil::isDate);
+		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compareDate, DateTimeUtils::isDate);
 	}
 
 	/**
@@ -1137,7 +1137,7 @@ public class DateTimeUtil {
 			return null;
 		} else if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
 				for (DateTimeFormatter format : PRESET_TIME_FORMAT.keySet()) {
 					result = parseTime(sourceString, format);
 					if (result != null) {
@@ -1174,7 +1174,7 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalTime</b> value.
 	 */
 	public static LocalTime parseTime(String source, String formatPattern) {
-		return parse(source, formatPattern, DateTimeUtil::parseTime);
+		return parse(source, formatPattern, DateTimeUtils::parseTime);
 	}
 
 	/**
@@ -1239,7 +1239,7 @@ public class DateTimeUtil {
 		LocalTime result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
 				for (Map.Entry<DateTimeFormatter, String> entry : PRESET_TIME_FORMAT.entrySet()) {
 					result = parseTime(sourceString + entry.getValue(), entry.getKey());
 					if (result != null) {
@@ -1270,7 +1270,7 @@ public class DateTimeUtil {
 		LocalTime result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
 				result = parseTime(sourceString + HOUR_COMPLEMENT, TIME_BASIC_PLAIN);
 				if (result == null) {
 					result = atStartOfMinute(sourceObject);
@@ -1450,7 +1450,7 @@ public class DateTimeUtil {
 	}
 
 	private static LocalTime extremumTime(Object[] sourceObjects, int direction) {
-		return extremum(sourceObjects, direction, DateTimeUtil::parseTime, DateTimeUtil::compareTime);
+		return extremum(sourceObjects, direction, DateTimeUtils::parseTime, DateTimeUtils::compareTime);
 	}
 
 	/**
@@ -1570,7 +1570,7 @@ public class DateTimeUtil {
 	}
 
 	private static boolean areInSequenceTimeCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
-		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtil::compareTime, DateTimeUtil::isTime);
+		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compareTime, DateTimeUtils::isTime);
 	}
 
 	/**
@@ -1809,7 +1809,7 @@ public class DateTimeUtil {
 			return null;
 		} else if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtil.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
 				for (DateTimeFormatter format : PRESET_DATE_TIME_FORMAT.keySet()) {
 					result = parse(sourceString, format);
 					if (result != null) {
@@ -1868,11 +1868,11 @@ public class DateTimeUtil {
 	 * @return Parsed <b>LocalDateTime</b> value.
 	 */
 	public static LocalDateTime parse(String source, String formatPattern) {
-		return parse(source, formatPattern, DateTimeUtil::parse);
+		return parse(source, formatPattern, DateTimeUtils::parse);
 	}
 
 	private static <Type> Type parse(String source, String formatPattern, BiFunction<String, DateTimeFormatter, Type> parser) {
-		if (EmbeddedStringUtil.isNullOrBlank(formatPattern)) {
+		if (EmbeddedStringUtils.isNullOrBlank(formatPattern)) {
 			return null;
 		}
 		return parser.apply(source, DateTimeFormatter.ofPattern(formatPattern));
@@ -1891,7 +1891,7 @@ public class DateTimeUtil {
 	}
 
 	private static <Type> Type parse(String source, DateTimeFormatter format, BiFunction<String, DateTimeFormatter, Type> parser) {
-		if (EmbeddedStringUtil.isNullOrBlank(source)) {
+		if (EmbeddedStringUtils.isNullOrBlank(source)) {
 			return null;
 		}
 		try {
@@ -2225,7 +2225,7 @@ public class DateTimeUtil {
 	}
 
 	private static LocalDateTime extremum(Object[] sourceObjects, int direction) {
-		return extremum(sourceObjects, direction, DateTimeUtil::parse, DateTimeUtil::compare);
+		return extremum(sourceObjects, direction, DateTimeUtils::parse, DateTimeUtils::compare);
 	}
 
 	private static <Type> Type extremum(Object[] sourceObjects, int direction, Function<Object, Type> parser, BiFunction<Type, Type, Integer> comparator) {
@@ -2309,7 +2309,7 @@ public class DateTimeUtil {
 	}
 
 	private static boolean areInSequenceCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
-		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtil::compare, DateTimeUtil::isDateTime);
+		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compare, DateTimeUtils::isDateTime);
 	}
 
 	private static boolean areInSequenceCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult,
@@ -2780,7 +2780,7 @@ public class DateTimeUtil {
 	private static final List<Integer> SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL = Collections.unmodifiableList(Arrays.asList(1, 0));
 	private static final List<Integer> SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL = Collections.unmodifiableList(Arrays.asList(1, 2, -2, 22));
 	private static final List<Integer> SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL = Collections.unmodifiableList(Arrays.asList(1, 0, 2, -2, 22));
-	private static final String EMPTY = EmbeddedStringUtil.EMPTY;
+	private static final String EMPTY = EmbeddedStringUtils.EMPTY;
 
 	static {
 		Map<DateTimeFormatter, String> presetDateFormatMap = new HashMap<>();
@@ -2859,49 +2859,19 @@ public class DateTimeUtil {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// embedded utils
 
-	private static class EmbeddedStringUtil {
+	private static class EmbeddedStringUtils {
 		private static final String EMPTY = "";
-		private static final List<Character> SPACE_CHAR = Collections.unmodifiableList(Arrays.asList(' ', '　', '	'));
-		private static String FHTrim(String source) {
-			return FHLTrim(FHRTrim(source));
-		}
-		private static String FHLTrim(String source) {
-			if (source == null || source.equals(EMPTY)) {
+		private static final String SPACE_CHARS = " 　\\t";
+
+		private static String trimSpace(String source) {
+			if (source == null || source.isEmpty()) {
 				return source;
 			}
-			int pos = 0;
-			for (int index = 0; index < source.length(); index ++) {
-				char c = source.charAt(index);
-				if (!SPACE_CHAR.contains(c)) {
-					break;
-				}
-				pos = index + 1;
-			}
-			if (pos > 0) {
-				return source.substring(pos);
-			}
-			return source;
-		}
-		private static String FHRTrim(String source) {
-			if (source == null || source.equals(EMPTY)) {
-				return source;
-			}
-			int pos = 0;
-			for (int index = source.length() - 1; index >= 0; index --) {
-				char c = source.charAt(index);
-				if (!SPACE_CHAR.contains(c)) {
-					break;
-				}
-				pos = index;
-			}
-			if (pos > 0) {
-				return source.substring(0, pos);
-			}
-			return source;
+			return source.replaceAll("^[" + SPACE_CHARS + "]+", EMPTY).replaceAll("[" + SPACE_CHARS + "]+$", EMPTY);
 		}
 
 		static boolean isNullOrBlank(String source) {
-			return source == null || FHTrim(source).length() == 0;
+			return source == null || trimSpace(source).isEmpty();
 		}
 	}
 

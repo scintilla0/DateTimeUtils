@@ -1,7 +1,11 @@
-# DateTimeUtil
+# DateTimeUtils
 A utility class that provides an assortment of date and time converting and calculation methods.
 
 ### Change log
+
+#### 1.1.9 (2025-03-25)
+*	Renamed to **DateTimeUtils**.
+*	**EmbeddedReflectiveUtils** updated.
 
 #### 1.1.8 (2024-04-12)
 *	Add method: **mergeDateTimeNoticeNull()**.
