@@ -8,6 +8,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -28,7 +29,7 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.9 - 2025-03-25
+ * @version 1.1.10 - 2025-03-26
  * @author scintilla0
  */
 public class DateTimeUtils {
@@ -2683,6 +2684,43 @@ public class DateTimeUtils {
 			return null;
 		}
 		return parser.apply(dateTime);
+	}
+
+	/**
+	 * Parses and truncates the target object using the <b>DateTime</b> precision of <b><i>SQL Server</b></i>.<br>
+	 * Uses {@link #parse(Object)} for automatic parsing.
+	 * @param sourceObject Target object to be parsed and truncated.
+	 * @return Truncated <b>LocalDateTime</b> value.
+	 */
+	public static LocalDateTime sqlServerTruncate(Object sourceObject) {
+		LocalDateTime dateTime = parse(sourceObject);
+		if (dateTime == null) {
+			return null;
+		}
+		final int MILLION = 1_000_000;
+		int nano = dateTime.get(ChronoField.NANO_OF_SECOND);
+		int millionDigit = (nano / MILLION) % 10;
+		switch (millionDigit) {
+			case 9:
+				nano = nano + MILLION;
+			case 0:
+			case 1:
+				millionDigit = 0;
+				break;
+			case 2:
+			case 3:
+			case 4:
+				millionDigit = 3;
+				break;
+			case 5:
+			case 6:
+			case 7:
+			case 8:
+				millionDigit = 7;
+				break;
+		}
+		nano = ((nano / MILLION / 10) * 10 + millionDigit) * MILLION;
+		return dateTime.with(ChronoField.NANO_OF_SECOND, nano);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
