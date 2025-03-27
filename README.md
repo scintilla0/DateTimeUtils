@@ -3,6 +3,9 @@ A utility class that provides an assortment of date and time converting and calc
 
 ### Change log
 
+#### 1.1.11 (2025-03-28)
+*	**EmbeddedStringUtils** updated.
+
 #### 1.1.10 (2025-03-26)
 *	Add method: **sqlServerTruncate()**.
 

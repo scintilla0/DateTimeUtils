@@ -29,7 +29,7 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.10 - 2025-03-26
+ * @version 1.1.11 - 2025-03-28
  * @author scintilla0
  */
 public class DateTimeUtils {
@@ -2899,13 +2899,13 @@ public class DateTimeUtils {
 
 	private static class EmbeddedStringUtils {
 		private static final String EMPTY = "";
-		private static final String SPACE_CHARS = " 　\\t";
+		private static final String SPACE_CHARS = "\\s\\u3000";
 
 		private static String trimSpace(String source) {
 			if (source == null || source.isEmpty()) {
 				return source;
 			}
-			return source.replaceAll("^[" + SPACE_CHARS + "]+", EMPTY).replaceAll("[" + SPACE_CHARS + "]+$", EMPTY);
+			return source.replaceAll("^[" + SPACE_CHARS + "]+|[" + SPACE_CHARS + "]+$", EMPTY);
 		}
 
 		static boolean isNullOrBlank(String source) {
