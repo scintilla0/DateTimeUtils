@@ -29,7 +29,7 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.11 - 2025-03-28
+ * @version 1.1.12 - 2025-04-07
  * @author scintilla0
  */
 public class DateTimeUtils {
@@ -57,7 +57,7 @@ public class DateTimeUtils {
 			return null;
 		} else if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isEmpty(sourceString)) {
 				for (DateTimeFormatter format : PRESET_DATE_FORMAT.keySet()) {
 					result = parseDate(sourceString, format);
 					if (result != null) {
@@ -121,7 +121,7 @@ public class DateTimeUtils {
 	 * @see #JP_ERA_NAME
 	 */
 	public static LocalDate parseDate_jp(String source) {
-		if (EmbeddedStringUtils.isNullOrBlank(source)) {
+		if (EmbeddedStringUtils.isEmpty(source)) {
 			return null;
 		}
 		if (source.length() <= 2) {
@@ -394,7 +394,7 @@ public class DateTimeUtils {
 		LocalDate result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isEmpty(sourceString)) {
 				for (Map.Entry<DateTimeFormatter, String> entry : PRESET_DATE_FORMAT.entrySet()) {
 					result = parseDate(sourceString + entry.getValue(), entry.getKey());
 					if (result != null) {
@@ -517,7 +517,7 @@ public class DateTimeUtils {
 		LocalDate result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isEmpty(sourceString)) {
 				result = parseDate(sourceString + YEAR_COMPLEMENT, DATE_FULL_PLAIN);
 				if (result == null) {
 					result = atDateInMonth(sourceObject, 1);
@@ -781,7 +781,7 @@ public class DateTimeUtils {
 	 * @param comparandObjects Target date objects to be compared.
 	 * @return {@code true} if all equal.
 	 */
-	public static boolean areSameDate(Object... comparandObjects) {
+	public static boolean isSameDate(Object... comparandObjects) {
 		return Arrays.stream(comparandObjects).allMatch(comparand -> compareDate(comparandObjects[0], comparand) == 0);
 	}
 
@@ -792,8 +792,8 @@ public class DateTimeUtils {
 	 * @param comparandObjects Target date objects to be compared.
 	 * @return {@code true} if all in the same month.
 	 */
-	public static boolean areInSameMonth(Object... comparandObjects) {
-		return areInSameDateCore(Arrays.asList(LocalDate::getYear, LocalDate::getMonthValue), comparandObjects);
+	public static boolean isInSameMonth(Object... comparandObjects) {
+		return isInSameDateCore(Arrays.asList(LocalDate::getYear, LocalDate::getMonthValue), comparandObjects);
 	}
 
 	/**
@@ -803,11 +803,11 @@ public class DateTimeUtils {
 	 * @param comparandObjects Target date objects to be compared.
 	 * @return {@code true} if all in the same year.
 	 */
-	public static boolean areInSameYear(Object... comparandObjects) {
-		return areInSameDateCore(Arrays.asList(LocalDate::getYear), comparandObjects);
+	public static boolean isInSameYear(Object... comparandObjects) {
+		return isInSameDateCore(Arrays.asList(LocalDate::getYear), comparandObjects);
 	}
 
-	private static boolean areInSameDateCore(List<Function<LocalDate, Integer>> comparators, Object... comparandObjects) {
+	private static boolean isInSameDateCore(List<Function<LocalDate, Integer>> comparators, Object... comparandObjects) {
 		for (int index = 1; index < comparandObjects.length; index ++) {
 			LocalDate comparand1 = parseDate(comparandObjects[0]), comparand2 = parseDate(comparandObjects[index]);
 			if (comparand1 == null || comparand2 == null) {
@@ -828,15 +828,15 @@ public class DateTimeUtils {
 	 * Adjacent arguments with same value are considered in proper sequence, hence no effect to the evaluating result.<br>
 	 * Any argument whose parse result is {@code null} will be ignored, hence no effect to the evaluating result.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceDate("2002-07-21", "2002-07-22", "2002-07-23") -> true
-	 * &#9;areInSequenceDate("2002-07-22", "2002-07-21", "2002-07-23") -> false
-	 * &#9;areInSequenceDate("2002-07-21", "2002-07-21", "2002-07-23") -> true
-	 * &#9;areInSequenceDate("2002-07-21", "2002-07-40", "2002-07-23") -> true</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingDate("2002-07-21", "2002-07-22", "2002-07-23") -> true
+	 * &#9;isAscendingDate("2002-07-22", "2002-07-21", "2002-07-23") -> false
+	 * &#9;isAscendingDate("2002-07-21", "2002-07-21", "2002-07-23") -> true
+	 * &#9;isAscendingDate("2002-07-21", "2002-07-40", "2002-07-23") -> true</pre>
 	 * @param comparandObjects Target date objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceDate(Object... comparandObjects) {
-		return areInSequenceDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_PLAIN);
+	public static boolean isAscendingDate(Object... comparandObjects) {
+		return isAscendingDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_PLAIN);
 	}
 
 	/**
@@ -845,15 +845,15 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Appearance of adjacent arguments with same value is considered to be violating the proper sequence.</b></font><br>
 	 * Any argument whose parse result is {@code null} will be ignored, hence no effect to the evaluating result.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceDateNotEqual("2002-07-21", "2002-07-22", "2002-07-23") -> true
-	 * &#9;areInSequenceDateNotEqual("2002-07-22", "2002-07-21", "2002-07-23") -> false
-	 * &#9;areInSequenceDateNotEqual("2002-07-21", "2002-07-21", "2002-07-23") -> false
-	 * &#9;areInSequenceDateNotEqual("2002-07-21", "2002-07-40", "2002-07-23") -> true</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingDateNotEqual("2002-07-21", "2002-07-22", "2002-07-23") -> true
+	 * &#9;isAscendingDateNotEqual("2002-07-22", "2002-07-21", "2002-07-23") -> false
+	 * &#9;isAscendingDateNotEqual("2002-07-21", "2002-07-21", "2002-07-23") -> false
+	 * &#9;isAscendingDateNotEqual("2002-07-21", "2002-07-40", "2002-07-23") -> true</pre>
 	 * @param comparandObjects Target date objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceDateNotEqual(Object... comparandObjects) {
-		return areInSequenceDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL);
+	public static boolean isAscendingDateNotEqual(Object... comparandObjects) {
+		return isAscendingDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL);
 	}
 
 	/**
@@ -862,15 +862,15 @@ public class DateTimeUtils {
 	 * Adjacent arguments with same value are considered in proper sequence, hence no effect to the evaluating result.<br>
 	 * <font color="#EE2222"><b>Any argument whose parse result is {@code null} is considered to be violating the proper sequence.</b></font><br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceDateNotNull("2002-07-21", "2002-07-22", "2002-07-23") -> true
-	 * &#9;areInSequenceDateNotNull("2002-07-22", "2002-07-21", "2002-07-23") -> false
-	 * &#9;areInSequenceDateNotNull("2002-07-21", "2002-07-21", "2002-07-23") -> true
-	 * &#9;areInSequenceDateNotNull("2002-07-21", "2002-07-40", "2002-07-23") -> false</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingDateNotNull("2002-07-21", "2002-07-22", "2002-07-23") -> true
+	 * &#9;isAscendingDateNotNull("2002-07-22", "2002-07-21", "2002-07-23") -> false
+	 * &#9;isAscendingDateNotNull("2002-07-21", "2002-07-21", "2002-07-23") -> true
+	 * &#9;isAscendingDateNotNull("2002-07-21", "2002-07-40", "2002-07-23") -> false</pre>
 	 * @param comparandObjects Target date objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceDateNotNull(Object... comparandObjects) {
-		return areInSequenceDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL);
+	public static boolean isAscendingDateNotNull(Object... comparandObjects) {
+		return isAscendingDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL);
 	}
 
 	/**
@@ -879,19 +879,19 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Appearance of adjacent arguments with same value is considered to be violating the proper sequence.</b></font><br>
 	 * <font color="#EE2222"><b>Any argument whose parse result is {@code null} is considered to be violating the proper sequence.</b></font><br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceDateNotEqualNull("2002-07-21", "2002-07-22", "2002-07-23") -> true
-	 * &#9;areInSequenceDateNotEqualNull("2002-07-22", "2002-07-21", "2002-07-23") -> false
-	 * &#9;areInSequenceDateNotEqualNull("2002-07-21", "2002-07-21", "2002-07-23") -> false
-	 * &#9;areInSequenceDateNotEqualNull("2002-07-21", "2002-07-40", "2002-07-23") -> false</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingDateNotEqualNull("2002-07-21", "2002-07-22", "2002-07-23") -> true
+	 * &#9;isAscendingDateNotEqualNull("2002-07-22", "2002-07-21", "2002-07-23") -> false
+	 * &#9;isAscendingDateNotEqualNull("2002-07-21", "2002-07-21", "2002-07-23") -> false
+	 * &#9;isAscendingDateNotEqualNull("2002-07-21", "2002-07-40", "2002-07-23") -> false</pre>
 	 * @param comparandObjects Target date objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceDateNotEqualNull(Object... comparandObjects) {
-		return areInSequenceDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL);
+	public static boolean isAscendingDateNotEqualNull(Object... comparandObjects) {
+		return isAscendingDateCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL);
 	}
 
-	private static boolean areInSequenceDateCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
-		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compareDate, DateTimeUtils::isDate);
+	private static boolean isAscendingDateCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
+		return isAscendingCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compareDate, DateTimeUtils::isDate);
 	}
 
 	/**
@@ -1138,7 +1138,7 @@ public class DateTimeUtils {
 			return null;
 		} else if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isEmpty(sourceString)) {
 				for (DateTimeFormatter format : PRESET_TIME_FORMAT.keySet()) {
 					result = parseTime(sourceString, format);
 					if (result != null) {
@@ -1240,7 +1240,7 @@ public class DateTimeUtils {
 		LocalTime result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isEmpty(sourceString)) {
 				for (Map.Entry<DateTimeFormatter, String> entry : PRESET_TIME_FORMAT.entrySet()) {
 					result = parseTime(sourceString + entry.getValue(), entry.getKey());
 					if (result != null) {
@@ -1271,7 +1271,7 @@ public class DateTimeUtils {
 		LocalTime result;
 		if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isEmpty(sourceString)) {
 				result = parseTime(sourceString + HOUR_COMPLEMENT, TIME_BASIC_PLAIN);
 				if (result == null) {
 					result = atStartOfMinute(sourceObject);
@@ -1461,8 +1461,8 @@ public class DateTimeUtils {
 	 * @param comparandObjects Target time objects to be compared.
 	 * @return {@code true} if all in the same second.
 	 */
-	public static boolean areInSameSecond(Object... comparandObjects) {
-		return areInSameTimeCore(Arrays.asList(LocalTime::getHour, LocalTime::getMinute, LocalTime::getSecond), comparandObjects);
+	public static boolean isInSameSecond(Object... comparandObjects) {
+		return isInSameTimeCore(Arrays.asList(LocalTime::getHour, LocalTime::getMinute, LocalTime::getSecond), comparandObjects);
 	}
 
 	/**
@@ -1472,8 +1472,8 @@ public class DateTimeUtils {
 	 * @param comparandObjects Target time objects to be compared.
 	 * @return {@code true} if all in the same minute.
 	 */
-	public static boolean areInSameMinute(Object... comparandObjects) {
-		return areInSameTimeCore(Arrays.asList(LocalTime::getHour, LocalTime::getMinute), comparandObjects);
+	public static boolean isInSameMinute(Object... comparandObjects) {
+		return isInSameTimeCore(Arrays.asList(LocalTime::getHour, LocalTime::getMinute), comparandObjects);
 	}
 
 	/**
@@ -1483,11 +1483,11 @@ public class DateTimeUtils {
 	 * @param comparandObjects Target time objects to be compared.
 	 * @return {@code true} if all in the same hour.
 	 */
-	public static boolean areInSameHour(Object... comparandObjects) {
-		return areInSameTimeCore(Arrays.asList(LocalTime::getHour), comparandObjects);
+	public static boolean isInSameHour(Object... comparandObjects) {
+		return isInSameTimeCore(Arrays.asList(LocalTime::getHour), comparandObjects);
 	}
 
-	private static boolean areInSameTimeCore(List<Function<LocalTime, Integer>> comparators, Object... comparandObjects) {
+	private static boolean isInSameTimeCore(List<Function<LocalTime, Integer>> comparators, Object... comparandObjects) {
 		for (int index = 1; index < comparandObjects.length; index ++) {
 			LocalTime comparand1 = parseTime(comparandObjects[0]), comparand2 = parseTime(comparandObjects[index]);
 			if (comparand1 == null || comparand2 == null) {
@@ -1508,15 +1508,15 @@ public class DateTimeUtils {
 	 * Adjacent arguments with same value are considered in proper sequence, hence no effect to the evaluating result.<br>
 	 * Any argument whose parse result is {@code null} will be ignored, hence no effect to the evaluating result.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceTime("12:30:10", "12:30:20", "12:30:30") -> true
-	 * &#9;areInSequenceTime("12:30:20", "12:30:10", "12:30:30") -> false
-	 * &#9;areInSequenceTime("12:30:10", "12:30:10", "12:30:30") -> true
-	 * &#9;areInSequenceTime("12:30:10", "12:30:80", "12:30:30") -> true</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingTime("12:30:10", "12:30:20", "12:30:30") -> true
+	 * &#9;isAscendingTime("12:30:20", "12:30:10", "12:30:30") -> false
+	 * &#9;isAscendingTime("12:30:10", "12:30:10", "12:30:30") -> true
+	 * &#9;isAscendingTime("12:30:10", "12:30:80", "12:30:30") -> true</pre>
 	 * @param comparandObjects Target time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceTime(Object... comparandObjects) {
-		return areInSequenceTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_PLAIN);
+	public static boolean isAscendingTime(Object... comparandObjects) {
+		return isAscendingTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_PLAIN);
 	}
 
 	/**
@@ -1525,15 +1525,15 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Appearance of adjacent arguments with same value is considered to be violating the proper sequence.</b></font><br>
 	 * Any argument whose parsing result is {@code null} will be ignored, hence no affect to the checking result.<br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceTimeNotEqual("12:30:10", "12:30:20", "12:30:30") -> true
-	 * &#9;areInSequenceTimeNotEqual("12:30:20", "12:30:10", "12:30:30") -> false
-	 * &#9;areInSequenceTimeNotEqual("12:30:10", "12:30:10", "12:30:30") -> false
-	 * &#9;areInSequenceTimeNotEqual("12:30:10", "12:30:80", "12:30:30") -> true</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingTimeNotEqual("12:30:10", "12:30:20", "12:30:30") -> true
+	 * &#9;isAscendingTimeNotEqual("12:30:20", "12:30:10", "12:30:30") -> false
+	 * &#9;isAscendingTimeNotEqual("12:30:10", "12:30:10", "12:30:30") -> false
+	 * &#9;isAscendingTimeNotEqual("12:30:10", "12:30:80", "12:30:30") -> true</pre>
 	 * @param comparandObjects Target time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceTimeNotEqual(Object... comparandObjects) {
-		return areInSequenceTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL);
+	public static boolean isAscendingTimeNotEqual(Object... comparandObjects) {
+		return isAscendingTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL);
 	}
 
 	/**
@@ -1542,15 +1542,15 @@ public class DateTimeUtils {
 	 * Adjacent arguments with same value are considered in proper sequence, hence no effect to the evaluating result.<br>
 	 * <font color="#EE2222"><b>Any argument whose parse result is {@code null} is considered to be violating the proper sequence.</b></font><br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceTimeNotNull("12:30:10", "12:30:20", "12:30:30") -> true
-	 * &#9;areInSequenceTimeNotNull("12:30:20", "12:30:10", "12:30:30") -> false
-	 * &#9;areInSequenceTimeNotNull("12:30:10", "12:30:10", "12:30:30") -> true
-	 * &#9;areInSequenceTimeNotNull("12:30:10", "12:30:80", "12:30:30") -> false</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingTimeNotNull("12:30:10", "12:30:20", "12:30:30") -> true
+	 * &#9;isAscendingTimeNotNull("12:30:20", "12:30:10", "12:30:30") -> false
+	 * &#9;isAscendingTimeNotNull("12:30:10", "12:30:10", "12:30:30") -> true
+	 * &#9;isAscendingTimeNotNull("12:30:10", "12:30:80", "12:30:30") -> false</pre>
 	 * @param comparandObjects Target time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceTimeNotNull(Object... comparandObjects) {
-		return areInSequenceTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL);
+	public static boolean isAscendingTimeNotNull(Object... comparandObjects) {
+		return isAscendingTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL);
 	}
 
 	/**
@@ -1559,19 +1559,19 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Appearance of adjacent arguments with same value is considered to be violating the proper sequence.</b></font><br>
 	 * <font color="#EE2222"><b>Any argument whose parse result is {@code null} is considered to be violating the proper sequence.</b></font><br>
 	 * Uses {@link #parseDate(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceTimeNotEqualNull("12:30:10", "12:30:20", "12:30:30") -> true
-	 * &#9;areInSequenceTimeNotEqualNull("12:30:20", "12:30:10", "12:30:30") -> false
-	 * &#9;areInSequenceTimeNotEqualNull("12:30:10", "12:30:10", "12:30:30") -> false
-	 * &#9;areInSequenceTimeNotEqualNull("12:30:10", "12:30:80", "12:30:30") -> false</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingTimeNotEqualNull("12:30:10", "12:30:20", "12:30:30") -> true
+	 * &#9;isAscendingTimeNotEqualNull("12:30:20", "12:30:10", "12:30:30") -> false
+	 * &#9;isAscendingTimeNotEqualNull("12:30:10", "12:30:10", "12:30:30") -> false
+	 * &#9;isAscendingTimeNotEqualNull("12:30:10", "12:30:80", "12:30:30") -> false</pre>
 	 * @param comparandObjects Target time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceTimeNotEqualNull(Object... comparandObjects) {
-		return areInSequenceTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL);
+	public static boolean isAscendingTimeNotEqualNull(Object... comparandObjects) {
+		return isAscendingTimeCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL);
 	}
 
-	private static boolean areInSequenceTimeCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
-		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compareTime, DateTimeUtils::isTime);
+	private static boolean isAscendingTimeCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
+		return isAscendingCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compareTime, DateTimeUtils::isTime);
 	}
 
 	/**
@@ -1810,7 +1810,7 @@ public class DateTimeUtils {
 			return null;
 		} else if (sourceObject instanceof String) {
 			String sourceString = (String) sourceObject;
-			if (!EmbeddedStringUtils.isNullOrBlank(sourceString)) {
+			if (!EmbeddedStringUtils.isEmpty(sourceString)) {
 				for (DateTimeFormatter format : PRESET_DATE_TIME_FORMAT.keySet()) {
 					result = parse(sourceString, format);
 					if (result != null) {
@@ -1873,7 +1873,7 @@ public class DateTimeUtils {
 	}
 
 	private static <Type> Type parse(String source, String formatPattern, BiFunction<String, DateTimeFormatter, Type> parser) {
-		if (EmbeddedStringUtils.isNullOrBlank(formatPattern)) {
+		if (EmbeddedStringUtils.isEmpty(formatPattern)) {
 			return null;
 		}
 		return parser.apply(source, DateTimeFormatter.ofPattern(formatPattern));
@@ -1892,7 +1892,7 @@ public class DateTimeUtils {
 	}
 
 	private static <Type> Type parse(String source, DateTimeFormatter format, BiFunction<String, DateTimeFormatter, Type> parser) {
-		if (EmbeddedStringUtils.isNullOrBlank(source)) {
+		if (EmbeddedStringUtils.isEmpty(source)) {
 			return null;
 		}
 		try {
@@ -2247,15 +2247,15 @@ public class DateTimeUtils {
 	 * Adjacent arguments with same value are considered in proper sequence, hence no effect to the evaluating result.<br>
 	 * Any argument whose parse result is {@code null} will be ignored, hence no effect to the evaluating result.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequence("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
-	 * &#9;areInSequence("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
-	 * &#9;areInSequence("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> true
-	 * &#9;areInSequence("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> true</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscending("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
+	 * &#9;isAscending("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
+	 * &#9;isAscending("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> true
+	 * &#9;isAscending("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> true</pre>
 	 * @param comparandObjects Target date time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequence(Object... comparandObjects) {
-		return areInSequenceCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_PLAIN);
+	public static boolean isAscending(Object... comparandObjects) {
+		return isAscendingCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_PLAIN);
 	}
 
 	/**
@@ -2264,15 +2264,15 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Appearance of adjacent arguments with same value is considered to be violating the proper sequence.</b></font><br>
 	 * Any argument whose parse result is {@code null} will be ignored, hence no effect to the evaluating result.<br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceNotEqual("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
-	 * &#9;areInSequenceNotEqual("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
-	 * &#9;areInSequenceNotEqual("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> false
-	 * &#9;areInSequenceNotEqual("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> true</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingNotEqual("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
+	 * &#9;isAscendingNotEqual("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
+	 * &#9;isAscendingNotEqual("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> false
+	 * &#9;isAscendingNotEqual("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> true</pre>
 	 * @param comparandObjects Target date time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceNotEqual(Object... comparandObjects) {
-		return areInSequenceCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL);
+	public static boolean isAscendingNotEqual(Object... comparandObjects) {
+		return isAscendingCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL);
 	}
 
 	/**
@@ -2281,15 +2281,15 @@ public class DateTimeUtils {
 	 * Adjacent arguments with same value are considered in proper sequence, hence no effect to the evaluating result.<br>
 	 * <font color="#EE2222"><b>Any argument whose parse result is {@code null} is considered to be violating the proper sequence.</b></font><br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceNotNull("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
-	 * &#9;areInSequenceNotNull("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
-	 * &#9;areInSequenceNotNull("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> true
-	 * &#9;areInSequenceNotNull("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> false</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingNotNull("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
+	 * &#9;isAscendingNotNull("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
+	 * &#9;isAscendingNotNull("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> true
+	 * &#9;isAscendingNotNull("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> false</pre>
 	 * @param comparandObjects Target date time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceNotNull(Object... comparandObjects) {
-		return areInSequenceCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL);
+	public static boolean isAscendingNotNull(Object... comparandObjects) {
+		return isAscendingCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL);
 	}
 
 	/**
@@ -2298,22 +2298,22 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Appearance of adjacent arguments with same value is considered to be violating the proper sequence.</b></font><br>
 	 * <font color="#EE2222"><b>Any argument whose parse result is {@code null} is considered to be violating the proper sequence.</b></font><br>
 	 * Uses {@link #parse(Object)} for automatic parsing.
-	 * <pre><b><i>Eg.:</i></b>&#9;areInSequenceNotEqualNull("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
-	 * &#9;areInSequenceNotEqualNull("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
-	 * &#9;areInSequenceNotEqualNull("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> false
-	 * &#9;areInSequenceNotEqualNull("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> false</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;isAscendingNotEqualNull("2002-07-21 12:30:00", "2002-07-22 12:30:00") -> true
+	 * &#9;isAscendingNotEqualNull("2002-07-22 12:30:00", "2002-07-21 12:30:00") -> false
+	 * &#9;isAscendingNotEqualNull("2002-07-21 12:30:00", "2002-07-21 12:30:00") -> false
+	 * &#9;isAscendingNotEqualNull("2002-07-21 12:30:00", "2002-07-40 12:30:00") -> false</pre>
 	 * @param comparandObjects Target date time objects to be compared.
 	 * @return {@code true} if in proper sequence.
 	 */
-	public static boolean areInSequenceNotEqualNull(Object... comparandObjects) {
-		return areInSequenceCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL);
+	public static boolean isAscendingNotEqualNull(Object... comparandObjects) {
+		return isAscendingCore(comparandObjects, SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL);
 	}
 
-	private static boolean areInSequenceCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
-		return areInSequenceCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compare, DateTimeUtils::isDateTime);
+	private static boolean isAscendingCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult) {
+		return isAscendingCore(comparandObjects, sequenceInvalidCompareResult, DateTimeUtils::compare, DateTimeUtils::isDateTime);
 	}
 
-	private static boolean areInSequenceCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult,
+	private static boolean isAscendingCore(Object[] comparandObjects, List<Integer> sequenceInvalidCompareResult,
 			BiFunction<Object, Object, Integer> compareMethod, Function<Object, Boolean> validateMethod) {
 		Object previousValidComparand = comparandObjects.length != 0 ? comparandObjects[0] : null;
 		for (int index = 1; index < comparandObjects.length; index ++) {
@@ -2818,7 +2818,7 @@ public class DateTimeUtils {
 	private static final List<Integer> SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL = Collections.unmodifiableList(Arrays.asList(1, 0));
 	private static final List<Integer> SEQUENCE_INVALID_COMPARE_RESULT_NOT_NULL = Collections.unmodifiableList(Arrays.asList(1, 2, -2, 22));
 	private static final List<Integer> SEQUENCE_INVALID_COMPARE_RESULT_NOT_EQUAL_NULL = Collections.unmodifiableList(Arrays.asList(1, 0, 2, -2, 22));
-	private static final String EMPTY = EmbeddedStringUtils.EMPTY;
+	private static final String BLANK = EmbeddedStringUtils.BLANK;
 
 	static {
 		Map<DateTimeFormatter, String> presetDateFormatMap = new HashMap<>();
@@ -2835,24 +2835,24 @@ public class DateTimeUtils {
 		presetDateFormatMap.put(_DATE_SHORT_Y_PLAIN, "01");
 		presetDateFormatMap.put(_DATE_SHORT_Y_SLASH, "/01");
 		presetDateFormatMap.put(_DATE_SHORT_Y_DASH, "-01");
-		presetDateFormatMap.put(_DATE_MDY_PLAIN, EMPTY);
+		presetDateFormatMap.put(_DATE_MDY_PLAIN, BLANK);
 
-		presetTimeFormatMap.put(TIME_SHORT_PLAIN, EMPTY);
-		presetTimeFormatMap.put(TIME_SHORT_COLON, EMPTY);
+		presetTimeFormatMap.put(TIME_SHORT_PLAIN, BLANK);
+		presetTimeFormatMap.put(TIME_SHORT_COLON, BLANK);
 		presetTimeFormatMap.put(TIME_BASIC_PLAIN, "00");
 		presetTimeFormatMap.put(TIME_BASIC_COLON, ":00");
 		presetTimeFormatMap.put(TIME_FULL_PLAIN, "00000");
 		presetTimeFormatMap.put(TIME_FULL_COLON, ":00.000");
 
-		presetDateTimeFormatMap.put(DATE_TIME_SHORT_PLAIN, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_SHORT_SLASH_COLON, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_SHORT_DASH_COLON, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_BASIC_PLAIN, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_BASIC_SLASH_COLON, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_BASIC_DASH_COLON, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_FULL_PLAIN, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_FULL_SLASH_COLON, EMPTY);
-		presetDateTimeFormatMap.put(DATE_TIME_FULL_DASH_COLON, EMPTY);
+		presetDateTimeFormatMap.put(DATE_TIME_SHORT_PLAIN, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_SHORT_SLASH_COLON, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_SHORT_DASH_COLON, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_BASIC_PLAIN, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_BASIC_SLASH_COLON, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_BASIC_DASH_COLON, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_FULL_PLAIN, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_FULL_SLASH_COLON, BLANK);
+		presetDateTimeFormatMap.put(DATE_TIME_FULL_DASH_COLON, BLANK);
 
 		PRESET_DATE_FORMAT = Collections.unmodifiableMap(presetDateFormatMap);
 		PRESET_TIME_FORMAT = Collections.unmodifiableMap(presetTimeFormatMap);
@@ -2898,17 +2898,17 @@ public class DateTimeUtils {
 	// embedded utils
 
 	private static class EmbeddedStringUtils {
-		private static final String EMPTY = "";
+		private static final String BLANK = "";
 		private static final String SPACE_CHARS = "\\s\\u3000";
 
 		private static String trimSpace(String source) {
 			if (source == null || source.isEmpty()) {
 				return source;
 			}
-			return source.replaceAll("^[" + SPACE_CHARS + "]+|[" + SPACE_CHARS + "]+$", EMPTY);
+			return source.replaceAll("^[" + SPACE_CHARS + "]+|[" + SPACE_CHARS + "]+$", BLANK);
 		}
 
-		static boolean isNullOrBlank(String source) {
+		static boolean isEmpty(String source) {
 			return source == null || trimSpace(source).isEmpty();
 		}
 	}

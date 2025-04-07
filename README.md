@@ -3,6 +3,9 @@ A utility class that provides an assortment of date and time converting and calc
 
 ### Change log
 
+#### 1.1.12 (2025-04-07)
+*	Method names normalized: ~~**areInSequence()**~~ -> **isAscending()**, ~~**are...()**~~ -> **is...()**.
+
 #### 1.1.11 (2025-03-28)
 *	**EmbeddedStringUtils** updated.
 
