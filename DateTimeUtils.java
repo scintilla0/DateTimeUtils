@@ -29,7 +29,7 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.12 - 2025-04-07
+ * @version 1.1.13 - 2025-04-15
  * @author scintilla0
  */
 public class DateTimeUtils {
@@ -911,7 +911,7 @@ public class DateTimeUtils {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Provides an ascending <b>Comparator&lt;Type&gt;</b> available in methods such as {@link List#sort(Comparator)}.<br>
 	 * Uses {@link #compareDate(Object, Object)} as base method.
-	 * <pre><b><i>Eg.:</i></b>&#9;userList.sort(DecimalUtil.compareDateAsc(User::getBirthDay))</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;userList.sort(DateTimeUtils.compareDateAsc(User::getBirthDay))</pre>
 	 * @param <Type> The type of object to be compared.
 	 * @param fieldGetter The getter of the field to be used for comparing.
 	 * @return <b>Comparator&lt;Type&gt;</b><br>
@@ -924,7 +924,7 @@ public class DateTimeUtils {
 	 * <font color="#2222EE"><b>Date operation.</b></font><br>
 	 * Provides a descending <b>Comparator&lt;Type&gt;</b> available in methods such as {@link List#sort(Comparator)}.<br>
 	 * Uses {@link #compare(Object, Object)} as base method.
-	 * <pre><b><i>Eg.:</i></b>&#9;userList.sort(DecimalUtil.compareDateDesc(User::getBirthDay))</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;userList.sort(DateTimeUtils.compareDateDesc(User::getBirthDay))</pre>
 	 * @param <Type> The type of object to be compared.
 	 * @param fieldGetter The getter of the field to be used for comparing.
 	 * @return <b>Comparator&lt;Type&gt;</b><br>
@@ -1591,7 +1591,7 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Provides an ascending <b>Comparator&lt;Type&gt;</b> available in methods such as {@link List#sort(Comparator)}.<br>
 	 * Uses {@link #compareTime(Object, Object)} as base method.
-	 * <pre><b><i>Eg.:</i></b>&#9;lessonList.sort(DecimalUtil.compareTimeAsc(Lesson::getBeginTime))</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;lessonList.sort(DateTimeUtils.compareTimeAsc(Lesson::getBeginTime))</pre>
 	 * @param <Type> The type of object to be compared.
 	 * @param fieldGetter The getter of the field to be used for comparing.
 	 * @return <b>Comparator&lt;Type&gt;</b><br>
@@ -1604,7 +1604,7 @@ public class DateTimeUtils {
 	 * <font color="#EE2222"><b>Time operation.</b></font><br>
 	 * Provides a descending <b>Comparator&lt;Type&gt;</b> available in methods such as {@link List#sort(Comparator)}.<br>
 	 * Uses {@link #compare(Object, Object)} as base method.
-	 * <pre><b><i>Eg.:</i></b>&#9;lessonList.sort(DecimalUtil.compareTimeDesc(Lesson::getBeginTime))</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;lessonList.sort(DateTimeUtils.compareTimeDesc(Lesson::getBeginTime))</pre>
 	 * @param <Type> The type of object to be compared.
 	 * @param fieldGetter The getter of the field to be used for comparing.
 	 * @return <b>Comparator&lt;Type&gt;</b><br>
@@ -2370,7 +2370,7 @@ public class DateTimeUtils {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Provides an ascending <b>Comparator&lt;Type&gt;</b> available in methods such as {@link List#sort(Comparator)}.<br>
 	 * Uses {@link #compareTime(Object, Object)} as base method.
-	 * <pre><b><i>Eg.:</i></b>&#9;eventList.sort(DecimalUtil.compareAsc(Event::getEventDateTime))</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;eventList.sort(DateTimeUtils.compareAsc(Event::getEventDateTime))</pre>
 	 * @param <Type> The type of object to be compared.
 	 * @param fieldGetter The getter of the field to be used for comparing.
 	 * @return <b>Comparator&lt;Type&gt;</b><br>
@@ -2383,7 +2383,7 @@ public class DateTimeUtils {
 	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
 	 * Provides a descending <b>Comparator&lt;Type&gt;</b> available in methods such as {@link List#sort(Comparator)}.<br>
 	 * Uses {@link #compare(Object, Object)} as base method.
-	 * <pre><b><i>Eg.:</i></b>&#9;eventList.sort(DecimalUtil.compareDesc(Event::getEventDateTime))</pre>
+	 * <pre><b><i>Eg.:</i></b>&#9;eventList.sort(DateTimeUtils.compareDesc(Event::getEventDateTime))</pre>
 	 * @param <Type> The type of object to be compared.
 	 * @param fieldGetter The getter of the field to be used for comparing.
 	 * @return <b>Comparator&lt;Type&gt;</b><br>

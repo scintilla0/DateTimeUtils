@@ -3,6 +3,9 @@ A utility class that provides an assortment of date and time converting and calc
 
 ### Change log
 
+#### 1.1.13 (2025-04-15)
+*	Javadoc rectified.
+
 #### 1.1.12 (2025-04-07)
 *	Method names normalized: ~~**areInSequence()**~~ -> **isAscending()**, ~~**are...()**~~ -> **is...()**.
 
