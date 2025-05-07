@@ -29,7 +29,7 @@ import java.util.function.Function;
  * This class provides an assortment of date and time converting and calculation methods,
  * most of which have auto-parsing support using {@link #parseDate(Object)},
  * {@link #parseTime(Object)} and {@link #parse(Object)}.<br>
- * @version 1.1.13 - 2025-04-15
+ * @version 1.1.14 - 2025-05-07
  * @author scintilla0
  */
 public class DateTimeUtils {
@@ -1611,6 +1611,53 @@ public class DateTimeUtils {
 	 */
 	public static <Type> Comparator<Type> compareTimeDesc(Function<Type, Object> fieldGetter) {
 		return (entity1, entity2) -> compareTime(fieldGetter.apply(entity2), fieldGetter.apply(entity1));
+	}
+
+	/**
+	 * <font color="EE22EE"><b>DateTime operation.</b></font><br>
+	 * Evaluates if there is any overlap between the two target date time spans.<br>
+	 * Returns {@code null} if any argument is null, or any end date time is before its begin date time.<br>
+	 * Uses {@link #parse(Object)} for automatic parsing.
+	 * <pre><b><i>Eg.:</i></b>&#9;isOverlapping("2002-07-21 12:30:00", "2002-07-21 13:00:00",
+	 *                      "2002-07-21 12:30:00", "2002-07-21 13:00:00") -> true
+	 *                      span1:  |________ ________ ________|
+	 *                      span2:  |________ ________ ________|
+	 *                            12:30    12:40    12:50    13:00
+	 * &#9;isOverlapping("2002-07-21 12:30:00", "2002-07-21 13:00:00",
+	 *                      "2002-07-21 12:40:00", "2002-07-21 13:00:00") -> true
+	 *                      span1:  |________ ________ ________|
+	 *                      span2:           |________ ________|
+	 *                            12:30    12:40    12:50    13:00
+	 * &#9;isOverlapping("2002-07-21 12:30:00", "2002-07-21 13:00:00",
+	 *                      "2002-07-21 12:40:00", "2002-07-21 13:10:00") -> true
+	 *                      span1:  |________ ________ ________|
+	 *                      span2:           |________ ________ ________|
+	 *                            12:30    12:40    12:50    13:00    13:10
+	 * &#9;isOverlapping("2002-07-21 12:30:00", "2002-07-21 13:00:00",
+	 *                      "2002-07-21 13:00:00", "2002-07-21 13:10:00") -> false
+	 *                      span1:  |________ ________ ________|
+	 *                      span2:                             |________|
+	 *                            12:30    12:40    12:50    13:00    13:10
+	 * &#9;isOverlapping("2002-07-21 12:30:00", "2002-07-21 12:50:00",
+	 *                      "2002-07-21 13:00:00", "2002-07-21 13:10:00") -> false
+	 *                      span1:  |________ ________|
+	 *                      span2:                             |________|
+	 *                            12:30    12:40    12:50    13:00    13:10</pre>
+	 * @param beginDateTimeObject1 Target begin date time object of the first span.
+	 * @param endDateTimeObject1 Target end date time object of the first span.
+	 * @param beginDateTimeObject2 Target begin date time object of the second span.
+	 * @param endDateTimeObject2 Target end date time object of the second span.
+	 * @return {@code true} if overlaps.
+	 */
+	public static boolean isOverlapping(Object beginDateTimeObject1, Object endDateTimeObject1,
+			Object beginDateTimeObject2, Object endDateTimeObject2) {
+		LocalDateTime beginDateTime1 = parse(beginDateTimeObject1), endDateTime1 = parse(endDateTimeObject1);
+		LocalDateTime beginDateTime2 = parse(beginDateTimeObject2), endDateTime2 = parse(endDateTimeObject2);
+		if (beginDateTime1 == null || endDateTime1 == null || beginDateTime2 == null || endDateTime2 == null ||
+				!endDateTime1.isAfter(beginDateTime1) || !endDateTime2.isAfter(beginDateTime2)) {
+			return false;
+		}
+		return beginDateTime1.isBefore(endDateTime2) && beginDateTime2.isBefore(endDateTime1);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
